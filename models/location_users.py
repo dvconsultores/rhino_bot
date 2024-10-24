@@ -1,6 +1,7 @@
 from db import db  # Import db from db.py
 from models.users import User
 from models.locations import Locations
+from models.plans import Plans
 import enum
 from datetime import datetime
 
@@ -20,10 +21,14 @@ class LocationUsers(db.Model):
     
     # Creation date with default datetime
     creation_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    plan_id = db.Column(db.Integer, db.ForeignKey('plans.id'), nullable=False)
+    
     
     # Relationships
     user = db.relationship('User', backref=db.backref('location_users', lazy=True))  # Correct the class name to 'User', not 'Users'
     location = db.relationship('Locations', backref=db.backref('location_users', lazy=True))
+    plan = db.relationship('Plans', backref=db.backref('location_users', lazy=True))
     
     # __repr__ method to return a string representation of the object
     def __repr__(self):

@@ -1,0 +1,31 @@
+# file:///home/andres/vsCodeProjects/Python/TheTelegramHub/rhino_bot/locales/es/LC_MESSAGES/messages.po
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "register"
+msgstr "🤖 Registrarse"
+
+msgid "plans"
+msgstr "📋 Ver Planes"
+
+msgid "locations"
+msgstr "📍 Ver Ubicaciones"
+
+msgid "schedule"
+msgstr "📅 Ver Horarios"
+
+msgid "payment"
+msgstr "💳 Ver Pagos"
+
+msgid "administrator"
+msgstr "🛠️ Administrar"
+
+msgid "language"
+msgstr "🌐 Cambiar Idioma"
+
+msgid "welcome_message"
+msgstr "Bienvenido al Rhino Bot {nom} - {cid}, podrás registrar tus pagos, ver sedes, precios y mucho más {nom}"
+
+msgid "available"
+msgstr "Opciones disponibles"

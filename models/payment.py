@@ -12,6 +12,8 @@ class Payment(db.Model):
     reference = db.Column(db.String(120), nullable=False)
     payment_method_id = db.Column(db.Integer, db.ForeignKey('payment_methods.id'), nullable=False)
     creation_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    year = db.Column(db.Integer, nullable=False)
+    month = db.Column(db.Integer, nullable=False)
 
     user = db.relationship('User', backref=db.backref('payments', lazy=True))
     payment_method = db.relationship('PaymentMethods', backref=db.backref('payments', lazy=True))

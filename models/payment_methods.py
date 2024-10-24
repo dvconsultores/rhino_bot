@@ -9,4 +9,4 @@ class PaymentMethods(db.Model):
 
     def __repr__(self):
         fields = ', '.join(f'{key}={value}' for key, value in self.__dict__.items() if not key.startswith('_'))
-        return f'<User {fields}>'
+        return f'<PaymentMethod {fields}>'

@@ -23,3 +23,12 @@ for bp in all_blueprints:
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+# export FLASK_APP=app.py
+# flask db init
+# flask db migrate -m "Initial migration."
+# flask db upgrade    
+# install msgfmt in Dockerfile
+# compile translations
+# msgfmt telegram_bot/locales/es/LC_MESSAGES/messages.po -o telegram_bot/locales/es/LC_MESSAGES/messages.mo
+# msgfmt telegram_bot/locales/en/LC_MESSAGES/messages.po -o telegram_bot/locales/en/LC_MESSAGES/messages.mo

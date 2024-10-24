@@ -20,6 +20,7 @@ class User(db.Model):
     instagram = db.Column(db.String(120), unique=True, nullable=False)
     type = db.Column(db.Enum(UserType), unique=False, nullable=False)
     creation_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    telegram_id = db.Column(db.BigInteger, unique=True, nullable=True)
 
     def __repr__(self):
         fields = ', '.join(f'{key}={value}' for key, value in self.__dict__.items() if not key.startswith('_'))

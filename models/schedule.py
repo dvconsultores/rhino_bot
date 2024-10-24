@@ -21,7 +21,7 @@ class Schedule(db.Model):
     time_end = db.Column(db.Time, nullable=False)
     creation_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
-    location = db.relationship('Location', backref=db.backref('schedules', lazy=True))
+    location = db.relationship('Locations', backref=db.backref('schedule', lazy=True))
 
     def __repr__(self):
         fields = ', '.join(f'{key}={value}' for key, value in self.__dict__.items() if not key.startswith('_'))
