@@ -1,12 +1,13 @@
 # controllers/language_controller.py
 from flask import Blueprint, request, jsonify
 from flasgger import swag_from
-from services.language_service import get_all_languages, get_language_by_telegram_id, create_language, update_language, delete_language
+from models.language import Language
 
 language_bp = Blueprint('language', __name__)
 
 @language_bp.route('/languages', methods=['GET'])
 @swag_from({
+    'tags': ['Languages'],
     'responses': {
         200: {
             'description': 'A list of languages',
@@ -40,6 +41,7 @@ def get_languages():
             'description': 'The Telegram ID of the language'
         }
     ],
+    'tags': ['Languages'],
     'responses': {
         200: {
             'description': 'A language',
@@ -78,6 +80,7 @@ def get_language(id_telegram):
             }
         }
     ],
+    'tags': ['Languages'],
     'responses': {
         201: {
             'description': 'Language created',
@@ -121,6 +124,7 @@ def add_language():
             }
         }
     ],
+    'tags': ['Languages'], 
     'responses': {
         200: {
             'description': 'Language updated',
@@ -143,36 +147,3 @@ def edit_language(id_telegram):
     data = request.get_json()
     updated_language = update_language(id_telegram, data)
     return jsonify(updated_language.to_dict()) if updated_language else ('', 404)
-
-@language_bp.route('/languages/<int:language_id>', methods=['DELETE'])
-@swag_from({
-    'parameters': [
-        {
-            'name': 'language_id',
-            'in': 'path',
-            'type': 'integer',
-            'required': True,
-            'description': 'The ID of the language'
-        }
-    ],
-    'responses': {
-        200: {
-            'description': 'Language deleted',
-            'schema': {
-                'type': 'object',
-                'properties': {
-                    'id': {'type': 'integer'},
-                    'id_telegram': {'type': 'integer'},
-                    'Language': {'type': 'string'},
-                    'creation_date': {'type': 'string', 'format': 'date-time'}
-                }
-            }
-        },
-        404: {
-            'description': 'Language not found'
-        }
-    }
-})
-def remove_language(language_id):
-    deleted_language = delete_language(language_id)
-    return jsonify(deleted_language.to_dict()) if deleted_language else ('', 404)

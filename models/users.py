@@ -9,6 +9,10 @@ class UserType(enum.Enum):
     cliente = "cliente"
     owner = "owner"
 
+class Status(enum.Enum):
+    ACTIVO = 'activo'
+    INACTIVO = 'inactivo'    
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), unique=False, nullable=False)
@@ -21,6 +25,23 @@ class User(db.Model):
     type = db.Column(db.Enum(UserType), unique=False, nullable=False)
     creation_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     telegram_id = db.Column(db.BigInteger, unique=True, nullable=True)
+    estatus = db.Column(db.Enum(Status), unique=False, nullable=False, default=Status.ACTIVO)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'lastname': self.lastname,
+            'cedula': self.cedula,
+            'email': self.email,
+            'date_of_birth': self.date_of_birth.isoformat(),
+            'phone': self.phone,
+            'instagram': self.instagram,
+            'type': self.type.value,
+            'creation_date': self.creation_date.isoformat(),
+            'telegram_id': self.estatus.value,
+            'estatus': self.estatus.value
+        }
 
     def __repr__(self):
         fields = ', '.join(f'{key}={value}' for key, value in self.__dict__.items() if not key.startswith('_'))

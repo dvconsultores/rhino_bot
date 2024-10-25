@@ -21,10 +21,3 @@ def update_user(user_id, data):
             setattr(user, key, value)
         db.session.commit()
     return user
-
-def delete_user(user_id):
-    user = User.query.get(user_id)
-    if user:
-        db.session.delete(user)
-        db.session.commit()
-    return user

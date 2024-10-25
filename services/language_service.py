@@ -21,10 +21,3 @@ def update_language(id_telegram, data):
             setattr(language, key, value)
         db.session.commit()
     return language
-
-def delete_language(language_id):
-    language = Language.query.get(language_id)
-    if language:
-        db.session.delete(language)
-        db.session.commit()
-    return language
