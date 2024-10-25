@@ -59,5 +59,4 @@ if __name__ == '__main__':
 # flask db upgrade    
 # install msgfmt in Dockerfile
 # compile translations
-# msgfmt telegram_bot/locales/es/LC_MESSAGES/messages.po -o telegram_bot/locales/es/LC_MESSAGES/messages.mo
-# msgfmt telegram_bot/locales/en/LC_MESSAGES/messages.po -o telegram_bot/locales/en/LC_MESSAGES/messages.mo
+# ./language.sh

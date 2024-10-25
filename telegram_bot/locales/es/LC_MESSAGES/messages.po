@@ -37,7 +37,7 @@ msgid "language_text"
 msgstr "🌐 Seleccione a continuación el Idioma de su prefrencia"
 
 msgid "otions"
-msgstr "'🔽 Seleccione una opción"
+msgstr "🔽 Seleccione una opción"
 
 msgid "language_error"
 msgstr "Valor no válido, debe seleccionar 'ES' para español ó 'EN' para inglés"
