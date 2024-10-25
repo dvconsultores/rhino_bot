@@ -19,7 +19,6 @@ for script in scripts:
 try:
     while True:
         for script, process in processes.items():
-            print(f"Running {script}...")
             if process.poll() is not None:  # Process has terminated
                 print(f"{script} has stopped. Restarting...")
                 processes[script] = run_script(script)

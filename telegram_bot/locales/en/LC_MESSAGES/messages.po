@@ -1,4 +1,3 @@
-# file:///home/andres/vsCodeProjects/Python/TheTelegramHub/rhino_bot/locales/en/LC_MESSAGES/messages.po
 msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -13,10 +12,10 @@ msgid "locations"
 msgstr "📍 View Locations"
 
 msgid "schedule"
-msgstr "📅 View Schedules"
+msgstr "📅 View Schedule"
 
 msgid "payment"
-msgstr "💳 View Payments"
+msgstr "💳 Register Payment"
 
 msgid "administrator"
 msgstr "🛠️ Administer"
@@ -29,3 +28,21 @@ msgstr "Welcome to Rhino Bot {nom} - {cid}, you can register your payments, view
 
 msgid "available"
 msgstr "Available options"
+
+msgid "cancel"
+msgstr "Cancel"
+
+msgid "language_text"
+msgstr "🌐 Select your preferred language below"
+
+msgid "otions"
+msgstr "🔽 Select an option"
+
+msgid "language_error"
+msgstr "Invalid value, you must select 'ES' for Spanish or 'EN' for English"
+
+msgid "language_set"
+msgstr "🌐 Preferred language saved successfully"
+
+msgid "procesing"
+msgstr "⏳ Processing ..."

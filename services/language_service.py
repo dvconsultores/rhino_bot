@@ -5,8 +5,8 @@ from db import db
 def get_all_languages():
     return Language.query.all()
 
-def get_language_by_id(language_id):
-    return Language.query.get(language_id)
+def get_language_by_telegram_id(id_telegram):
+    return Language.query.filter_by(id_telegram=id_telegram).first()
 
 def create_language(data):
     new_language = Language(**data)
@@ -14,8 +14,8 @@ def create_language(data):
     db.session.commit()
     return new_language
 
-def update_language(language_id, data):
-    language = Language.query.get(language_id)
+def update_language(id_telegram, data):
+    language = Language.query.filter_by(id_telegram=id_telegram).first()
     if language:
         for key, value in data.items():
             setattr(language, key, value)

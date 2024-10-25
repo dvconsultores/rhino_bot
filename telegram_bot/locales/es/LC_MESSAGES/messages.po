@@ -29,3 +29,21 @@ msgstr "Bienvenido al Rhino Bot {nom} - {cid}, podrás registrar tus pagos, ver 
 
 msgid "available"
 msgstr "Opciones disponibles"
+
+msgid "cancel"
+msgstr "Cancelar"
+
+msgid "language_text"
+msgstr "🌐 Seleccione a continuación el Idioma de su prefrencia"
+
+msgid "otions"
+msgstr "'🔽 Seleccione una opción"
+
+msgid "language_error"
+msgstr "Valor no válido, debe seleccionar 'ES' para español ó 'EN' para inglés"
+
+msgid "language_set"
+msgstr "🌐 Idioma de preferencia guardado con éxito"
+
+msgid "procesing"
+msgstr "⏳ Procesando ..."
