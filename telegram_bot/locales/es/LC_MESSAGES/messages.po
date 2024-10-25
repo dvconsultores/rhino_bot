@@ -7,16 +7,16 @@ msgid "register"
 msgstr "🤖 Registrarse"
 
 msgid "plans"
-msgstr "📋 Ver Planes"
+msgstr "📋 Consultar Planes"
 
 msgid "locations"
 msgstr "📍 Ver Ubicaciones"
 
 msgid "schedule"
-msgstr "📅 Ver Horarios"
+msgstr "📅 Consultar Horarios"
 
 msgid "payment"
-msgstr "💳 Ver Pagos"
+msgstr "💳 Registrar Pago"
 
 msgid "administrator"
 msgstr "🛠️ Administrar"
