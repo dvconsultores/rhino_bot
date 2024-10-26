@@ -46,3 +46,32 @@ msgstr "🌐 Preferred language saved successfully"
 
 msgid "procesing"
 msgstr "⏳ Processing ..."
+
+
+####################################################################################################
+##########################################Usuarios##################################################
+####################################################################################################
+
+msgid "create_user_p1"
+msgstr "Por favor, proporcione los detalles del usuario en el formato:"
+
+msgid "create_user_p2"
+msgstr "Nombre,Apellido,Cédula,Email,Fecha de Naciemiendo (dd/mm/yyyy),Teléfono,Instagram"
+
+msgid "missing_fields"
+msgstr "Faltan campos obligatorios. Por favor, proporcione al menos Nombre, Apellido, Cédula, Email, Fecha de Nacimiento y Teléfono."
+
+msgid "minimal_required"
+msgstr "Error: Nombre, Apellido, cédula, Email y teléfono son campos obligatorios."
+
+msgid "bad_date_format"
+msgstr "Error: La fecha de nacimiento debe estar en el formato dd/mm/yyyy."
+
+msgid "bad_email_format"
+msgstr "Error: Formato de Email inválido."
+
+msgid "success_message"
+msgstr "¡Usuario creado con éxito!"
+
+msgid "error_message"
+msgstr "Error al crear el usuario. Error:"

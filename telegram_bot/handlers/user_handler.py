@@ -44,67 +44,124 @@ def fetch_user_info(message, bot):
     except Exception as e:
         bot.send_message(message.chat.id, f"An error occurred: {str(e)}")
 
+# Dictionary to store user data temporarily
+user_data = {}
+
 def create_user(bot, message):
-    """Prompt to create a new user."""
-    msg = bot.send_message(message.chat.id, "Please provide the user details in the format:\n"
-                                            "`name,lastname,cedula,email,date_of_birth (dd/mm/yyyy),phone,instagram,type,status,telegram_id`")
-    bot.register_next_step_handler(msg, process_user_creation, bot=bot)
+    """Start user creation by asking for the user's name."""
+    user_data[message.chat.id] = {}
+    msg = bot.send_message(message.chat.id, _("Please enter the user's name:"))
+    bot.register_next_step_handler(msg, process_name, bot=bot)
 
-def process_user_creation(message, bot):
-    """
-    Process user creation from input.
-    Args:
-        message (telegram.Message): The message object containing user input.
-        bot (telegram.Bot): The bot instance to send messages.
-    The function expects the user input in the message text to be a comma-separated string
-    containing at least the following fields: name, lastname, cedula, email, date_of_birth, and phone.
-    Optional fields include: instagram, type, status, and telegram_id.
-    The function performs the following steps:
-    1. Splits the message text into user data fields.
-    2. Ensures that the required fields are present.
-    3. Sets default values for 'type' and 'status' if not provided.
-    4. Validates the required fields.
-    5. Validates the date format of 'date_of_birth'.
-    6. Validates the email format.
-    7. Sends a request to create the user via an API.
-    8. Sends a success or failure message to the user based on the API response.
-    Returns:
-        None
-    """
-    """Process user creation from input."""
-    user_data = message.text.split(',')
-    if len(user_data) < 6:  # Ensure required fields are present
-        bot.send_message(message.chat.id, "Missing required fields. Please provide at least name, lastname, cedula, email, date_of_birth, and phone.")
+def process_name(message, bot):
+    """Process the user's name and ask for the last name."""
+    if not message.text.strip():
+        msg = bot.send_message(message.chat.id, _("Name is required. Please enter the user's name:"))
+        bot.register_next_step_handler(msg, process_name, bot=bot)
         return
-
-    keys = ["name", "lastname", "cedula", "email", "date_of_birth", "phone", "instagram", "type", "status", "telegram_id"]
-    data = dict(zip(keys, user_data))
     
-    # Set default values if not provided
-    data['type'] = data.get('type', 'cliente')
-    data['status'] = data.get('status', 'ACTIVO')
+    user_data[message.chat.id]["name"] = message.text.strip()
+    msg = bot.send_message(message.chat.id, _("Please enter the user's last name:"))
+    bot.register_next_step_handler(msg, process_lastname, bot=bot)
 
-    # Validate required fields
-    if not all([data.get("name"), data.get("lastname"), data.get("cedula"), data.get("email"), data.get("phone")]):
-        bot.send_message(message.chat.id, "Error: name, lastname, cedula, email, and phone are required fields.")
+def process_lastname(message, bot):
+    """Process the last name and ask for the cedula."""
+    if not message.text.strip():
+        msg = bot.send_message(message.chat.id, _("Last name is required. Please enter the user's last name:"))
+        bot.register_next_step_handler(msg, process_lastname, bot=bot)
+        return
+    
+    user_data[message.chat.id]["lastname"] = message.text.strip()
+    msg = bot.send_message(message.chat.id, _("Please enter the user's cedula:"))
+    bot.register_next_step_handler(msg, process_cedula, bot=bot)
+
+def process_cedula(message, bot):
+    """Process the cedula and ask for the email."""
+    if not message.text.strip():
+        msg = bot.send_message(message.chat.id, _("Cedula is required. Please enter the user's cedula:"))
+        bot.register_next_step_handler(msg, process_cedula, bot=bot)
         return
 
-    # Validate date format
-    if not validate_date(data["date_of_birth"]):
-        bot.send_message(message.chat.id, "Error: Date of birth must be in format dd/mm/yyyy.")
+    user_data[message.chat.id]["cedula"] = message.text.strip()
+    msg = bot.send_message(message.chat.id, _("Please enter the user's email:"))
+    bot.register_next_step_handler(msg, process_email, bot=bot)
+
+def process_email(message, bot):
+    """Process the email and validate its format, then ask for the date of birth."""
+    if not validate_email(message.text):
+        msg = bot.send_message(message.chat.id, _("Invalid email format. Please re-enter:"))
+        bot.register_next_step_handler(msg, process_email, bot=bot)
+        return
+    
+    user_data[message.chat.id]["email"] = message.text
+    msg = bot.send_message(message.chat.id, _("Please enter the user's date of birth (dd/mm/yyyy):"))
+    bot.register_next_step_handler(msg, process_date_of_birth, bot=bot)
+
+def process_date_of_birth(message, bot):
+    """Process the date of birth, validate it, and then ask for the phone number."""
+    if not validate_date(message.text):
+        msg = bot.send_message(message.chat.id, _("Invalid date format. Please re-enter (dd/mm/yyyy):"))
+        bot.register_next_step_handler(msg, process_date_of_birth, bot=bot)
+        return
+    
+    user_data[message.chat.id]["date_of_birth"] = message.text
+    msg = bot.send_message(message.chat.id, _("Please enter the user's phone number:"))
+    bot.register_next_step_handler(msg, process_phone, bot=bot)
+
+def process_phone(message, bot):
+    """Process the phone number and then ask for the Instagram handle."""
+    if not message.text.strip():
+        msg = bot.send_message(message.chat.id, _("Phone number is required. Please enter the user's phone number:"))
+        bot.register_next_step_handler(msg, process_phone, bot=bot)
         return
 
-    # Validate email format
-    if not validate_email(data["email"]):
-        bot.send_message(message.chat.id, "Error: Invalid email format.")
-        return
+    user_data[message.chat.id]["phone"] = message.text.strip()
+    msg = bot.send_message(message.chat.id, _("Please enter the user's Instagram handle (or type 'skip' to leave it empty):"))
+    bot.register_next_step_handler(msg, process_instagram, bot=bot)
 
-    # Send the request to create the user
-    response = requests.post(f"{BASE_URL}/users", json=data)
-    if response.status_code == 201:
-        bot.send_message(message.chat.id, "User created successfully!")
-    else:
-        bot.send_message(message.chat.id, f"Failed to create user. Error: {response.status_code}")
+def process_instagram(message, bot):
+    """Process the Instagram handle and then confirm user details before creation."""
+    user_data[message.chat.id]["instagram"] = message.text if message.text.lower() != "skip" else None
+
+    # Set default values for type, status, and telegram_id
+    user_data[message.chat.id]["type"] = "cliente"
+    user_data[message.chat.id]["status"] = "ACTIVO"
+    user_data[message.chat.id]["telegram_id"] = message.chat.id
+
+    # Display collected data for confirmation
+    user_info = "\n".join([f"{key}: {value}" for key, value in list(user_data[message.chat.id].items())[:7] if value])
+    confirmation_text = _("Please confirm the details:\n") + user_info
+
+    # Show confirmation options with Yes, No, and Cancel buttons
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton(_("Yes"), callback_data="confirm_yes"))
+    markup.add(types.InlineKeyboardButton(_("No"), callback_data="confirm_no"))
+    markup.add(types.InlineKeyboardButton(_("Cancel"), callback_data="confirm_cancel"))
+    bot.send_message(message.chat.id, confirmation_text, reply_markup=markup)
+
+def confirmation_handler(call, bot):
+    """Handle confirmation of user creation."""
+    cid = call.message.chat.id
+    action = call.data.split("_")[1]
+
+    if action == "yes":
+        # Send the API request to create the user
+        response = requests.post(f"{BASE_URL}/users", json=user_data[cid])
+        if response.status_code == 201:
+            bot.send_message(cid, _("User created successfully!"))
+        else:
+            bot.send_message(cid, _("Failed to create user.") + f" Error: {response.status_code}")
+        user_data.pop(cid)  # Clear user data after creation
+
+    elif action == "no":
+        # Restart user creation process
+        bot.send_message(cid, _("Let's try again. Please enter the user's name:"))
+        bot.register_next_step_handler(call.message, process_name, bot=bot)
+        user_data.pop(cid)  # Clear previous data
+
+    elif action == "cancel":
+        bot.send_message(cid, _("User creation cancelled."))
+        user_data.pop(cid)  # Clear user data
 
 def update_user(bot, message):
     """Prompt to update an existing user."""
