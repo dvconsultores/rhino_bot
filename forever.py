@@ -14,6 +14,7 @@ processes = {}
 # Start all scripts
 for script in scripts:
     processes[script] = run_script(script)
+    print(f"Running {script}...")  # Print statement indicating the script is running
 
 # Monitor the scripts and restart if any of them stop
 try:

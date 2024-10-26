@@ -1,0 +1,6 @@
+msgid "create_user_p1"
+msgstr "Please provide the user details in the format:"
+
+msgid "create_user_p2"
+msgstr "`name,lastname,cedula,email,date_of_birth (dd/mm/yyyy),phone,instagram,type,status,telegram_id`"
+

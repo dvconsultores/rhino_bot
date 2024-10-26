@@ -1,7 +1,7 @@
 # controllers/language_controller.py
 from flask import Blueprint, request, jsonify
 from flasgger import swag_from
-from models.language import Language
+from services.language_service import get_all_languages, get_language_by_telegram_id, create_language, update_language
 
 language_bp = Blueprint('language', __name__)
 
@@ -32,6 +32,9 @@ def get_languages():
 
 @language_bp.route('/languages/<int:id_telegram>', methods=['GET'])
 @swag_from({
+    'tags': ['Languages'],
+    'summary': 'Get a language by Telegram ID',
+    'description': 'Retrieve a language by its Telegram ID.',
     'parameters': [
         {
             'name': 'id_telegram',
@@ -41,7 +44,6 @@ def get_languages():
             'description': 'The Telegram ID of the language'
         }
     ],
-    'tags': ['Languages'],
     'responses': {
         200: {
             'description': 'A language',
@@ -66,6 +68,9 @@ def get_language(id_telegram):
 
 @language_bp.route('/languages', methods=['POST'])
 @swag_from({
+    'tags': ['Languages'],
+    'summary': 'Create a new language',
+    'description': 'Create a new language with the provided data.',
     'parameters': [
         {
             'name': 'body',
@@ -80,7 +85,6 @@ def get_language(id_telegram):
             }
         }
     ],
-    'tags': ['Languages'],
     'responses': {
         201: {
             'description': 'Language created',
@@ -96,13 +100,16 @@ def get_language(id_telegram):
         }
     }
 })
-def add_language():
+def create_language():
     data = request.get_json()
     new_language = create_language(data)
     return jsonify(new_language.to_dict()), 201
 
 @language_bp.route('/languages/<int:id_telegram>', methods=['PUT'])
 @swag_from({
+    'tags': ['Languages'],
+    'summary': 'Update a language',
+    'description': 'Update an existing language with the provided data.',
     'parameters': [
         {
             'name': 'id_telegram',
@@ -124,7 +131,6 @@ def add_language():
             }
         }
     ],
-    'tags': ['Languages'], 
     'responses': {
         200: {
             'description': 'Language updated',
@@ -143,7 +149,43 @@ def add_language():
         }
     }
 })
-def edit_language(id_telegram):
+def update_language_controller(id_telegram):
     data = request.get_json()
     updated_language = update_language(id_telegram, data)
     return jsonify(updated_language.to_dict()) if updated_language else ('', 404)
+
+@language_bp.route('/languages/<int:id_telegram>', methods=['DELETE'])
+@swag_from({
+    'tags': ['Languages'],
+    'summary': 'Delete a language',
+    'description': 'Delete a language by its Telegram ID.',
+    'parameters': [
+        {
+            'name': 'id_telegram',
+            'in': 'path',
+            'type': 'integer',
+            'required': True,
+            'description': 'The Telegram ID of the language'
+        }
+    ],
+    'responses': {
+        200: {
+            'description': 'Language deleted',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'id': {'type': 'integer'},
+                    'id_telegram': {'type': 'integer'},
+                    'Language': {'type': 'string'},
+                    'creation_date': {'type': 'string', 'format': 'date-time'}
+                }
+            }
+        },
+        404: {
+            'description': 'Language not found'
+        }
+    }
+})
+def delete_language(id_telegram):
+    deleted_language = delete_language(id_telegram)
+    return jsonify(deleted_language.to_dict()) if deleted_language else ('', 404)
