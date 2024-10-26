@@ -51,6 +51,26 @@ def create_user(bot, message):
     bot.register_next_step_handler(msg, process_user_creation, bot=bot)
 
 def process_user_creation(message, bot):
+    """
+    Process user creation from input.
+    Args:
+        message (telegram.Message): The message object containing user input.
+        bot (telegram.Bot): The bot instance to send messages.
+    The function expects the user input in the message text to be a comma-separated string
+    containing at least the following fields: name, lastname, cedula, email, date_of_birth, and phone.
+    Optional fields include: instagram, type, status, and telegram_id.
+    The function performs the following steps:
+    1. Splits the message text into user data fields.
+    2. Ensures that the required fields are present.
+    3. Sets default values for 'type' and 'status' if not provided.
+    4. Validates the required fields.
+    5. Validates the date format of 'date_of_birth'.
+    6. Validates the email format.
+    7. Sends a request to create the user via an API.
+    8. Sends a success or failure message to the user based on the API response.
+    Returns:
+        None
+    """
     """Process user creation from input."""
     user_data = message.text.split(',')
     if len(user_data) < 6:  # Ensure required fields are present
