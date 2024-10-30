@@ -10,22 +10,23 @@ class UserType(enum.Enum):
     owner = "owner"
 
 class Status(enum.Enum):
-    ACTIVO = 'activo'
-    INACTIVO = 'inactivo'    
+    activo = 'activo'
+    inactivo = 'inactivo'    
+    moroso = 'moroso'
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), unique=False, nullable=False)
     lastname = db.Column(db.String(120), unique=False, nullable=False)
-    cedula = db.Column(db.Integer, unique=True, nullable=False)
+    cedula = db.Column(db.BigInteger, unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     date_of_birth = db.Column(db.Date, unique=False, nullable=False)
-    phone = db.Column(db.Integer, unique=False, nullable=False)
-    instagram = db.Column(db.String(120), unique=True, nullable=False)
+    phone = db.Column(db.BigInteger, unique=False, nullable=False)
+    instagram = db.Column(db.String(120), unique=True, nullable=True)
     type = db.Column(db.Enum(UserType), unique=False, nullable=False)
     creation_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    telegram_id = db.Column(db.BigInteger, unique=True, nullable=True)
-    estatus = db.Column(db.Enum(Status), unique=False, nullable=False, default=Status.ACTIVO)
+    telegram_id = db.Column(db.BigInteger, unique=True, nullable=False)
+    estatus = db.Column(db.Enum(Status), unique=False, nullable=False, default=Status.activo)
 
     def to_dict(self):
         return {

@@ -47,31 +47,94 @@ msgstr "🌐 Preferred language saved successfully"
 msgid "procesing"
 msgstr "⏳ Processing ..."
 
+msgid "general_yes"
+msgstr "Yes"
+
+msgid "general_no"
+msgstr "No"
+
+msgid "general_cancel"
+msgstr "Cancel"
+
 
 ####################################################################################################
 ##########################################Usuarios##################################################
 ####################################################################################################
 
-msgid "create_user_p1"
-msgstr "Por favor, proporcione los detalles del usuario en el formato:"
+msgid "get_user_id"
+msgstr "Please provide the user ID:"
 
-msgid "create_user_p2"
-msgstr "Nombre,Apellido,Cédula,Email,Fecha de Naciemiendo (dd/mm/yyyy),Teléfono,Instagram"
+msgid "create_user_name"
+msgstr "Please enter your name:"
 
-msgid "missing_fields"
-msgstr "Faltan campos obligatorios. Por favor, proporcione al menos Nombre, Apellido, Cédula, Email, Fecha de Nacimiento y Teléfono."
+msgid "create_user_name_required"
+msgstr "Name is required. Please enter the user's name:"
 
-msgid "minimal_required"
-msgstr "Error: Nombre, Apellido, cédula, Email y teléfono son campos obligatorios."
+msgid "create_user_last_name"
+msgstr "Please enter your last name:"
 
-msgid "bad_date_format"
-msgstr "Error: La fecha de nacimiento debe estar en el formato dd/mm/yyyy."
+msgid "create_user_last_name_required"
+msgstr "Last name is required. Please enter the user's last name:"
 
-msgid "bad_email_format"
-msgstr "Error: Formato de Email inválido."
+msgid "create_user_cedula"
+msgstr "Please enter your identification id:"
 
-msgid "success_message"
-msgstr "¡Usuario creado con éxito!"
+msgid "create_user_cedula_required"
+msgstr "Cedula is required. Please enter the user's cedula:"
 
-msgid "error_message"
-msgstr "Error al crear el usuario. Error:"
+msgid "create_user_email"
+msgstr "Please enter your email account:"
+
+msgid "create_user_email_required"
+msgstr "Cedula is required. Please enter the user's cedula:"
+
+msgid "create_user_date_of_birth"
+msgstr "Please enter your date of birth (dd/mm/yyyy):"
+
+msgid "create_user_date_of_birth_required"
+msgstr "Invalid date format. Please re-enter (dd/mm/yyyy):"
+
+msgid "create_user_phone_number"
+msgstr "Please enter your phone number:"
+
+msgid "create_user_phone_number_required"
+msgstr "Invalid date format. Please re-enter (dd/mm/yyyy):"
+
+msgid "create_user_ig"
+msgstr "Please enter your Instagram handle (or type 'skip' or click on 'Skip' to leave it empty):"
+
+msgid "create_user_confirm"
+msgstr "Please confirm the details:"
+
+msgid "create_user_success"
+msgstr "User created successfully!"
+
+msgid "create_user_fail"
+msgstr "Failed to create user."
+
+msgid "create_user_try_again"
+msgstr "Let's try again. Please enter the user's name:"
+
+msgid "create_user_cancel"
+msgstr "User creation cancelled."
+
+msgid "create_user_title_name"
+msgstr "Nombre:"
+
+msgid "create_user_title_last_name"
+msgstr "Apellido:"
+
+msgid "create_user_title_cedula"
+msgstr "Cédula:"
+
+msgid "create_user_title_email"
+msgstr "Correo electrónico:"
+
+msgid "create_user_title_date_of_birth"
+msgstr "Fecha de nacimiento:"
+
+msgid "create_user_title_phone"
+msgstr "Teléfono:"
+
+msgid "create_user_title_ig"
+msgstr "Instagram:"

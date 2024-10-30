@@ -8,6 +8,9 @@ def get_all_users():
 def get_user_by_id(user_id):
     return User.query.get(user_id)
 
+def get_user_by_telegram_id(telegram_id):
+    return User.query.filter_by(telegram_id=telegram_id).first()    
+
 def create_user(data):
     new_user = User(**data)
     db.session.add(new_user)

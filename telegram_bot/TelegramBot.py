@@ -20,7 +20,7 @@ def command_start(message):
     bot.send_message(cid, f"Bienvenido al Rhino Bot {nom} - {cid}, podrás registrar tus pagos, ver sedes, precios y mucho más {nom}")
     command_list(message)
 
-@bot.message_handler(commands=['list'])
+@bot.message_handler(commands=['menu'])
 @language_middleware
 def command_list(message):
     cid = message.chat.id
@@ -43,7 +43,7 @@ def command_list(message):
 def callback_handler(call):
     cid = call.message.chat.id
     options = {
-        'List': command_list,
+        'menu': command_list,
         'edit_language': lambda msg: edit_language(bot, msg),
         'create_user': lambda msg: create_user(bot, msg),
     }

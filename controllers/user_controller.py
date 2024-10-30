@@ -1,7 +1,15 @@
+# controllers/user_controller.py
+
 from flask import Blueprint, request, jsonify
 from flasgger import swag_from
-from models.users import User, UserType, Status
-from db import db
+from services.user_service import (
+    get_all_users,
+    get_user_by_id,
+    get_user_by_telegram_id,
+    create_user,
+    update_user
+)
+from models.users import UserType, Status
 
 user_bp = Blueprint('user', __name__)
 
@@ -37,7 +45,7 @@ user_bp = Blueprint('user', __name__)
     }
 })
 def get_users():
-    users = User.query.all()
+    users = get_all_users()
     return jsonify([user.to_dict() for user in users])
 
 @user_bp.route('/users/<int:user_id>', methods=['GET'])
@@ -81,8 +89,55 @@ def get_users():
     }
 })
 def get_user(user_id):
-    user = User.query.get(user_id)
+    user = get_user_by_id(user_id)
     return jsonify(user.to_dict()) if user else ('', 404)
+
+
+@user_bp.route('/users/telegram/<int:telegram_id>', methods=['GET'])
+@swag_from({
+    'tags': ['Users'],
+    'summary': 'Get a user by Telegram ID',
+    'description': 'Retrieve a user by their Telegram ID.',
+    'parameters': [
+        {
+            'name': 'telegram_id',
+            'in': 'path',
+            'type': 'integer',
+            'required': True,
+            'description': 'The Telegram ID of the user'
+        }
+    ],
+    'responses': {
+        200: {
+            'description': 'A user',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'id': {'type': 'integer'},
+                    'name': {'type': 'string'},
+                    'lastname': {'type': 'string'},
+                    'cedula': {'type': 'integer'},
+                    'email': {'type': 'string'},
+                    'date_of_birth': {'type': 'string', 'format': 'date'},
+                    'phone': {'type': 'integer'},
+                    'instagram': {'type': 'string'},
+                    'type': {'type': 'string'},
+                    'status': {'type': 'string'},
+                    'creation_date': {'type': 'string', 'format': 'date-time'},
+                    'telegram_id': {'type': 'integer'}
+                }
+            }
+        },
+        404: {
+            'description': 'User not found'
+        }
+    }
+})
+def get_user_by_telegram_id_controller(telegram_id):
+    # Use the service function to retrieve the user
+    user = get_user_by_telegram_id(telegram_id)
+    return jsonify(user.to_dict()) if user else ('', 404)
+
 
 @user_bp.route('/users', methods=['POST'])
 @swag_from({
@@ -136,23 +191,21 @@ def get_user(user_id):
 })
 def create_user():
     data = request.get_json()
-    new_user = User(**data)
-    db.session.add(new_user)
-    db.session.commit()
+    new_user = create_user(data)
     return jsonify(new_user.to_dict()), 201
 
-@user_bp.route('/users/<int:user_id>', methods=['PUT'])
+@user_bp.route('/users/telegram/<int:telegram_id>', methods=['PUT'])
 @swag_from({
     'tags': ['Users'],
-    'summary': 'Update a user',
-    'description': 'Update an existing user with the provided data.',
+    'summary': 'Update a user by Telegram ID',
+    'description': 'Update an existing user by their Telegram ID with the provided data.',
     'parameters': [
         {
-            'name': 'user_id',
+            'name': 'telegram_id',
             'in': 'path',
             'type': 'integer',
             'required': True,
-            'description': 'The ID of the user'
+            'description': 'The Telegram ID of the user'
         },
         {
             'name': 'body',
@@ -168,9 +221,9 @@ def create_user():
                     'date_of_birth': {'type': 'string', 'format': 'date'},
                     'phone': {'type': 'integer'},
                     'instagram': {'type': 'string'},
-                    'type': {'type': 'string', 'enum': [e.value for e in UserType]},
+                    'telegram_id': {'type': 'integer'},
                     'status': {'type': 'string', 'enum': [e.value for e in Status]},
-                    'telegram_id': {'type': 'integer'}
+                    'type': {'type': 'string', 'enum': ['cliente']}
                 }
             }
         }
@@ -189,10 +242,10 @@ def create_user():
                     'date_of_birth': {'type': 'string', 'format': 'date'},
                     'phone': {'type': 'integer'},
                     'instagram': {'type': 'string'},
-                    'type': {'type': 'string'},
+                    'telegram_id': {'type': 'integer'},
                     'status': {'type': 'string'},
-                    'creation_date': {'type': 'string', 'format': 'date-time'},
-                    'telegram_id': {'type': 'integer'}
+                    'type': {'type': 'string'},
+                    'creation_date': {'type': 'string', 'format': 'date-time'}
                 }
             }
         },
@@ -201,16 +254,22 @@ def create_user():
         }
     }
 })
-def update_user(user_id):
+def update_user_by_telegram_id(telegram_id):
     data = request.get_json()
-    user = User.query.get(user_id)
+
+    # Set default value for 'type' to 'cliente' if not provided
+    data['type'] = data.get('type', 'cliente')
+    data['status'] = data.get('status', 'activo')
+    
+    # Update the user using the service function to find by telegram_id
+    user = get_user_by_telegram_id(telegram_id)
     if user:
-        for key, value in data.items():
-            setattr(user, key, value)
-        db.session.commit()
-        return jsonify(user.to_dict())
+        updated_user = update_user(user.id, data)
+        return jsonify(updated_user.to_dict()) if updated_user else ('', 404)
     else:
         return ('', 404)
+
+
 
 @user_bp.route('/users/<int:user_id>', methods=['DELETE'])
 @swag_from({
@@ -253,7 +312,7 @@ def update_user(user_id):
     }
 })
 def delete_user(user_id):
-    user = User.query.get(user_id)
+    user = get_user_by_id(user_id)
     if user:
         db.session.delete(user)
         db.session.commit()

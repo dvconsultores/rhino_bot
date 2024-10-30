@@ -3,7 +3,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 
 msgid "register"
-msgstr "🤖 Registrar"
+msgstr "🤖 Registrar - Actualizar Datos"
 
 msgid "plans"
 msgstr "📋 Ver Planes"
@@ -24,7 +24,7 @@ msgid "language"
 msgstr "🌐 Cambiar Idioma"
 
 msgid "welcome_message"
-msgstr "Bienvenido al Rhino Bot {nom} - {cid}, puedes registrar tus pagos, ver ubicaciones, precios y mucho más {nom}"
+msgstr "Bienvenido a Rhino Bot {nom} - {cid}, puedes registrar tus pagos, ver ubicaciones, precios y mucho más {nom}"
 
 msgid "available"
 msgstr "Opciones disponibles"
@@ -35,11 +35,8 @@ msgstr "Cancelar"
 msgid "language_text"
 msgstr "🌐 Selecciona tu idioma preferido a continuación"
 
-msgid "otions"
-msgstr "🔽 Selecciona una opción"
-
 msgid "language_error"
-msgstr "Valor inválido, debes seleccionar 'ES' para Español o 'EN' para Inglés"
+msgstr "Valor no válido, debes seleccionar 'ES' para español o 'EN' para inglés"
 
 msgid "language_set"
 msgstr "🌐 Idioma preferido guardado con éxito"
@@ -47,31 +44,111 @@ msgstr "🌐 Idioma preferido guardado con éxito"
 msgid "procesing"
 msgstr "⏳ Procesando ..."
 
+msgid "general_yes"
+msgstr "Sí"
+
+msgid "general_no"
+msgstr "No"
+
+msgid "general_cancel"
+msgstr "Cancelar"
 
 ####################################################################################################
 ##########################################Usuarios##################################################
 ####################################################################################################
 
-msgid "create_user_p1"
-msgstr "Por favor, proporcione los detalles de su registro en el siguiente formato:"
+msgid "get_user_id"
+msgstr "Por favor, proporciona el ID del usuario:"
 
-msgid "create_user_p2"
-msgstr "Nombre,Apellido,Cédula,Email,Fecha de Nacimiento (dd/mm/yyyy),Teléfono,Instagram"
+msgid "create_user_name"
+msgstr "Por favor, ingrese su nombre:"
 
-msgid "missing_fields"
-msgstr "Faltan campos obligatorios. Por favor, proporcione al menos Nombre, Apellido, Cédula, Email, Fecha de Nacimiento y Teléfono."
+msgid "create_user_name_required"
+msgstr "El nombre es obligatorio. Por favor, ingresa el nombre del usuario:"
 
-msgid "minimal_required"
-msgstr "Error: Nombre, Apellido, cédula, Email y teléfono son campos obligatorios."
+msgid "create_user_last_name"
+msgstr "Por favor, ingrese su apellido:"
 
-msgid "bad_date_format"
-msgstr "Error: La fecha de nacimiento debe estar en el formato dd/mm/yyyy."
+msgid "create_user_last_name_required"
+msgstr "El apellido es obligatorio. Por favor, ingresa el apellido del usuario:"
 
-msgid "bad_email_format"
-msgstr "Error: Formato de Email inválido."
+msgid "create_user_cedula"
+msgstr "Por favor, ingrese su cédula (sólo numérico):"
 
-msgid "success_message"
-msgstr "¡Usuario creado con éxito! 😊 🚀"
+msgid "create_user_cedula_required"
+msgstr "La cédula es obligatoria y debe ser un valor numérico:"
 
-msgid "error_message"
-msgstr "😢 Error al crear el usuario. Error:"
+msgid "create_user_cedula_format"
+msgstr "La cédula debe ser un valor numérico"
+
+msgid "create_user_email"
+msgstr "Por favor ingrese su dirección de correo electrónico:"
+
+msgid "create_user_email_required"
+msgstr "El correo electrónico es obligatorio. Por favor, ingresa el correo electrónico del usuario:"
+
+msgid "create_user_date_of_birth"
+msgstr "Por favor, ingrese su fecha de nacimiento (dd/mm/aaaa):"
+
+msgid "create_user_date_of_birth_required"
+msgstr "Formato de fecha no válido. Por favor, reingresa (dd/mm/aaaa):"
+
+msgid "create_user_phone_number"
+msgstr "Por favor, ingrese su número de teléfono (sólo numérico):"
+
+msgid "create_user_phone_number_required"
+msgstr "El número de teléfono es obligatorio y debe ser un valor numérico:"
+
+msgid "create_user_ig"
+msgstr "Por favor, ingrese su cuenta de Instagram  (o escribe 'skip' o haz clic en 'Skip' para dejarlo vacío):"
+
+msgid "create_user_confirm"
+msgstr "Por favor, confirma los detalles:"
+
+msgid "create_user_success"
+msgstr "¡Usuario creado con éxito!"
+
+msgid "create_user_fail"
+msgstr "Error al crear el usuario."
+
+msgid "create_user_try_again"
+msgstr "Intentémoslo de nuevo. Por favor, ingresa el nombre del usuario:"
+
+msgid "create_user_cancel"
+msgstr "Creación de usuario cancelada."
+
+msgid "create_user_title_name"
+msgstr "Nombre:"
+
+msgid "create_user_title_last_name"
+msgstr "Apellido:"
+
+msgid "create_user_title_cedula"
+msgstr "Cédula"
+
+msgid "create_user_title_email"
+msgstr "Email:"
+
+msgid "create_user_title_date_of_birth"
+msgstr "Fecha de nacimiento"
+
+msgid "create_user_title_phone"
+msgstr "Teléfono:"
+
+msgid "create_user_title_ig"
+msgstr "Instagram:"
+
+msgid "create_user_title_type"
+msgstr "Tipo de usuario:"
+
+msgid "create_user_title_status"
+msgstr "Estatus:"
+
+msgid "create_user_title_telegram_id"
+msgstr "Id de Telegram:"
+
+msgid "create_user_restart"
+msgstr "Intentemos nuevamente. Por favor ingrese su nombre:"
+
+msgid "create_user_updated"
+msgstr "Actualización de datos"
