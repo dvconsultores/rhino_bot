@@ -52,18 +52,12 @@ def fetch_user_info(message, bot):
 # Dictionary to store user data temporarily
 user_data = {}
 
+# Simplified create_user function to only take message
 def create_user(bot, message):
     """Start user creation by asking for the user's name."""
     user_data[message.chat.id] = {}
     msg = bot.send_message(message.chat.id, _("create_user_name"))
     bot.register_next_step_handler(msg, process_name, bot=bot)
-
-# Simplified create_user function to only take message
-def create_user(message):
-    """Start user creation by asking for the user's name."""
-    user_data[message.chat.id] = {}
-    msg = bot.send_message(message.chat.id, _("create_user_name"))
-    bot.register_next_step_handler(msg, process_name)
 
 
 def process_name(message, bot):
@@ -193,7 +187,7 @@ def process_instagram(message, bot):
     markup.row(item2)
     markup.row(item3)
     msg = bot.send_message(message.chat.id, confirmation_text, reply_markup=markup)
-    bot.register_next_step_handler(msg, lambda msg: create_user(msg, bot))  # Provide `message` and `bot`
+    bot.register_next_step_handler(msg, lambda msg: confirmation_handler(msg, bot))  # Provide `message` and `bot`
 
 # Confirmation Handler
 def confirmation_handler(message, bot):
@@ -231,7 +225,9 @@ def confirmation_handler(message, bot):
     elif message.text == _("general_no"):
         # Restart user creation process
         msg = bot.send_message(cid, _("create_user_restart"), reply_markup=markup_remove)
-        bot.register_next_step_handler(msg, create_user, bot=bot)
+        bot.register_next_step_handler(msg, process_name, bot=bot)
+        # bot.register_next_step_handler(msg, lambda msg: create_user(msg, bot))
+        
 
     elif message.text == _("general_cancel"):
         # Cancel user creation process
