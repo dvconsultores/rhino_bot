@@ -52,18 +52,41 @@ def fetch_user_info(message, bot):
 # Dictionary to store user data temporarily
 user_data = {}
 
+def create_cancel_markup():
+    """Create a reply markup with a 'Cancel' button."""
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+    item1 = types.KeyboardButton(_("general_cancel"))
+    markup.row(item1)
+    return markup
+
+def cancel_process(bot, message):
+    """Handle the cancellation of the process."""
+    cid = message.chat.id
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+    item1 = types.KeyboardButton(("/menu"))
+    markup.row(item1)
+    bot.send_message(cid, _("process_canceled"), reply_markup=markup)
+    user_data.pop(cid, None)  # Clear user data after cancellation
+
 # Simplified create_user function to only take message
 def create_user(bot, message):
     """Start user creation by asking for the user's name."""
     user_data[message.chat.id] = {}
-    msg = bot.send_message(message.chat.id, _("create_user_name"))
+    markup = create_cancel_markup()
+    msg = bot.send_message(message.chat.id, _("create_user_name"), reply_markup=markup)
     bot.register_next_step_handler(msg, process_name, bot=bot)
 
 
 def process_name(message, bot):
+    """Process the user's name and ask for cancel."""
+    if message.text.strip().lower() == _("general_cancel").lower():
+        cancel_process(bot, message)
+        return
+
     """Process the user's name and ask for the last name."""
     if not message.text.strip():
-        msg = bot.send_message(message.chat.id, _("create_user_name_required"))
+        markup = create_cancel_markup()
+        msg = bot.send_message(message.chat.id, _("create_user_name_required"), reply_markup=markup)
         bot.register_next_step_handler(msg, process_name, bot=bot)
         return
     
@@ -72,9 +95,15 @@ def process_name(message, bot):
     bot.register_next_step_handler(msg, process_lastname, bot=bot)
 
 def process_lastname(message, bot):
+    """Process the user's name and ask for cancel."""
+    if message.text.strip().lower() == _("general_cancel").lower():
+        cancel_process(bot, message)
+        return
+
     """Process the last name and ask for the cedula."""
     if not message.text.strip():
-        msg = bot.send_message(message.chat.id, _("create_user_last_name_required"))
+        markup = create_cancel_markup()
+        msg = bot.send_message(message.chat.id, _("create_user_last_name_required"), reply_markup=markup)
         bot.register_next_step_handler(msg, process_lastname, bot=bot)
         return
     
@@ -83,12 +112,18 @@ def process_lastname(message, bot):
     bot.register_next_step_handler(msg, process_cedula, bot=bot)
 
 def process_cedula(message, bot):
+    """Process the user's name and ask for cancel."""
+    if message.text.strip().lower() == _("general_cancel").lower():
+        cancel_process(bot, message)
+        return
+
     """Process the cedula and ask for the email."""
     cedula_input = message.text.strip()
 
     # Check if cedula is empty or not an integer
     if not cedula_input or not cedula_input.isdigit():
-        msg = bot.send_message(message.chat.id, _("create_user_cedula_format"))
+        markup = create_cancel_markup()
+        msg = bot.send_message(message.chat.id, _("create_user_cedula_format"), reply_markup=markup)
         bot.register_next_step_handler(msg, process_cedula, bot=bot)
         return
 
@@ -98,9 +133,15 @@ def process_cedula(message, bot):
     bot.register_next_step_handler(msg, process_email, bot=bot)
 
 def process_email(message, bot):
+    """Process the user's name and ask for cancel."""
+    if message.text.strip().lower() == _("general_cancel").lower():
+        cancel_process(bot, message)
+        return
+
     """Process the email and validate its format, then ask for the date of birth."""
     if not validate_email(message.text.lower()):
-        msg = bot.send_message(message.chat.id, _("create_user_email_required"))
+        markup = create_cancel_markup()
+        msg = bot.send_message(message.chat.id, _("create_user_email_required"), reply_markup=markup)
         bot.register_next_step_handler(msg, process_email, bot=bot)
         return
     
@@ -109,6 +150,11 @@ def process_email(message, bot):
     bot.register_next_step_handler(msg, process_date_of_birth, bot=bot)
 
 def process_date_of_birth(message, bot):
+    """Process the user's name and ask for cancel."""
+    if message.text.strip().lower() == _("general_cancel").lower():
+        cancel_process(bot, message)
+        return
+
     """Process the date of birth, validate it, and then ask for the phone number."""
     date_input = message.text.strip()
 
@@ -124,10 +170,16 @@ def process_date_of_birth(message, bot):
     
     # Save the correctly formatted date to user_data
     user_data[message.chat.id]["date_of_birth"] = formatted_date
-    msg = bot.send_message(message.chat.id, _("create_user_phone_number"))
+    markup = create_cancel_markup()
+    msg = bot.send_message(message.chat.id, _("create_user_phone_number"), reply_markup=markup)
     bot.register_next_step_handler(msg, process_phone, bot=bot)
 
 def process_phone(message, bot):
+    """Process the user's name and ask for cancel."""
+    if message.text.strip().lower() == _("general_cancel").lower():
+        cancel_process(bot, message)
+        return
+        
     """Process the phone number and then ask for the Instagram handle."""
     phone_input = message.text.strip()
 
@@ -144,12 +196,18 @@ def process_phone(message, bot):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
     item1 = types.KeyboardButton('Skip')
     markup.row(item1)
+    markup.row(types.KeyboardButton(_("general_cancel")))
     msg = bot.send_message(message.chat.id, _("create_user_ig"), parse_mode='Markdown', reply_markup=markup)         
     bot.register_next_step_handler(msg, process_instagram, bot=bot)
 
 
 # Function to handle Instagram input and show confirmation
 def process_instagram(message, bot):
+    """Process the user's name and ask for cancel."""
+    if message.text.strip().lower() == _("general_cancel").lower():
+        cancel_process(bot, message)
+        return
+
     """Process the Instagram handle and then confirm user details before creation."""
     user_data[message.chat.id]["instagram"] = message.text if message.text.lower() != "skip" else None
 
@@ -189,7 +247,7 @@ def process_instagram(message, bot):
     msg = bot.send_message(message.chat.id, confirmation_text, reply_markup=markup)
     bot.register_next_step_handler(msg, lambda msg: confirmation_handler(msg, bot))  # Provide `message` and `bot`
 
-# Confirmation Handler
+# Confirmation Handler for Payment
 def confirmation_handler(message, bot):
     """Handle the user's confirmation choice."""
     cid = message.chat.id
@@ -198,85 +256,41 @@ def confirmation_handler(message, bot):
     markup_remove = types.ReplyKeyboardRemove()
     
     if message.text == _("general_yes"):
-        # Check if the user already exists by telegram_id
-        check_response = requests.get(f"{BASE_URL}/users/telegram/{cid}")
-
-        if check_response.status_code == 200:
-            # User exists, perform an update (PUT)
-            response = requests.put(f"{BASE_URL}/users/telegram/{cid}", json=user_data[cid])
-            if response.status_code == 200:
-                bot.send_message(cid, _("create_user_success") + " 😊 " + _("create_user_updated"), reply_markup=markup_remove)
-            else:
-                bot.send_message(cid, f"Failed to update user. Error: {response.status_code} 😢", reply_markup=markup_remove)
-        elif check_response.status_code == 404:
-            # User does not exist, perform a creation (POST)
-            response = requests.post(f"{BASE_URL}/users", json=user_data[cid])
-            if response.status_code == 201:
-                bot.send_message(cid, _("create_user_success") + " 😊", reply_markup=markup_remove)
-            else:
-                bot.send_message(cid, f"Failed to create user. Error: {response.status_code} 😢", reply_markup=markup_remove)
-        else:
-            # Handle unexpected errors (e.g., server error)
-            bot.send_message(cid, f"An error occurred. Status code: {check_response.status_code} 😢", reply_markup=markup_remove)
-
-        # Clear user data after creation or update
-        user_data.pop(cid, None)
+        # Proceed with payment submission
+        submit_payment(cid, bot, markup_remove)
 
     elif message.text == _("general_no"):
-        # Restart user creation process
-        msg = bot.send_message(cid, _("create_user_restart"), reply_markup=markup_remove)
-        bot.register_next_step_handler(msg, process_name, bot=bot)
-        # bot.register_next_step_handler(msg, lambda msg: create_user(msg, bot))
-        
+        # Restart payment process
+        bot.send_message(cid, _("payment_restart"), reply_markup=markup_remove)
+        start_payment(bot, message)  # Restart the payment process
 
     elif message.text == _("general_cancel"):
-        # Cancel user creation process
-        bot.send_message(cid, _("create_user_cancel"), reply_markup=markup_remove)
-        user_data.pop(cid, None)  # Clear user data after cancellation
+        # Cancel payment registration
+        bot.send_message(cid, _("payment_cancel"), reply_markup=markup_remove)
+        payment_data.pop(cid, None)  # Clear payment data after cancellation
 
 
-def update_user(bot, message):
-    """Prompt to update an existing user."""
-    msg = bot.send_message(message.chat.id, "Please provide the user ID to update:")
-    bot.register_next_step_handler(msg, process_user_update, bot=bot)
+# Submit payment to the API
+def submit_payment(cid, bot, markup_remove):
+    data = payment_data[cid]
+    payment_payload = {
+        'user_id': data['user_id'],
+        'date': datetime.now().strftime('%Y-%m-%d'),
+        'amount': data['amount'],
+        'reference': data['reference'],
+        'payment_method_id': data['payment_method_id'],
+        'year': datetime.now().year,
+        'month': datetime.now().month
+    }
 
-def process_user_update(message, bot):
-    user_id = message.text
-    msg = bot.send_message(message.chat.id, "Provide new details in format:\n"
-                                            "`name,lastname,cedula,email,date_of_birth (dd/mm/yyyy),phone,instagram,type,status,telegram_id`")
-    bot.register_next_step_handler(msg, send_update_request, user_id=user_id, bot=bot)
-
-def send_update_request(message, user_id, bot):
-    updated_data = message.text.split(',')
-    if len(updated_data) < 6:
-        bot.send_message(message.chat.id, "Missing required fields. Please provide at least name, lastname, cedula, email, date_of_birth, and phone.")
-        return
-
-    keys = ["name", "lastname", "cedula", "email", "date_of_birth", "phone", "instagram", "type", "status", "telegram_id"]
-    data = dict(zip(keys, updated_data))
+    # Make API call to submit the payment data
+    response = requests.post(f"{BASE_URL}/payments", json=payment_payload)
     
-    # Set default values if not provided
-    data['type'] = data.get('type', 'cliente')
-    data['status'] = data.get('status', 'ACTIVO')
-
-    # Validate required fields
-    if not all([data.get("name"), data.get("lastname"), data.get("cedula"), data.get("email"), data.get("phone")]):
-        bot.send_message(message.chat.id, "Error: name, lastname, cedula, email, and phone are required fields.")
-        return
-
-    # Validate date format
-    if not validate_date(data["date_of_birth"]):
-        bot.send_message(message.chat.id, "Error: Date of birth must be in format dd/mm/yyyy.")
-        return
-
-    # Validate email format
-    if not validate_email(data["email"]):
-        bot.send_message(message.chat.id, "Error: Invalid email format.")
-        return
-
-    # Send the request to update the user
-    response = requests.put(f"{BASE_URL}/users/{user_id}", json=data)
-    if response.status_code == 200:
-        bot.send_message(message.chat.id, "User updated successfully!")
+    if response.status_code == 201:
+        bot.send_message(cid, _("payment_success"), reply_markup=markup_remove)
     else:
-        bot.send_message(message.chat.id, f"Failed to update user. Error: {response.status_code}")
+        bot.send_message(cid, f"{_('payment_fail')} Error: {response.status_code}", reply_markup=markup_remove)
+
+    # Clear stored data
+    payment_data.pop(cid, None)
+

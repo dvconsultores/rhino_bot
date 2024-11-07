@@ -18,6 +18,20 @@ class Payment(db.Model):
     user = db.relationship('User', backref=db.backref('payments', lazy=True))
     payment_method = db.relationship('PaymentMethods', backref=db.backref('payments', lazy=True))
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'date': self.date.isoformat(),
+            'amount': self.amount,
+            'reference': self.reference,
+            'payment_method_id': self.payment_method_id,
+            'creation_date': self.creation_date.isoformat(),
+            'year': self.year,
+                'month': self.month
+            }
+
+
     def __repr__(self):
         fields = ', '.join(f'{key}={value}' for key, value in self.__dict__.items() if not key.startswith('_'))
         return f'<Payment {fields}>'
