@@ -258,10 +258,10 @@ def confirmation_handler(message, bot):
     if message.text == _("general_yes"):
         # Proceed with payment submission
         submit_payment(cid, bot, markup_remove)
-
+        bot.send_message(cid, _("procesing"))
     elif message.text == _("general_no"):
         # Restart payment process
-        bot.send_message(cid, _("payment_restart"), reply_markup=markup_remove)
+        bot.send_message(cid, _("create_user_restart"), reply_markup=markup_remove)
         start_payment(bot, message)  # Restart the payment process
 
     elif message.text == _("general_cancel"):

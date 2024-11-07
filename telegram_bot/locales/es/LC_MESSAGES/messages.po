@@ -2,6 +2,12 @@ msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 
+msgid "welcome1"
+msgstr "Bienvenido al Rhino Bot"
+
+msgid "welcome2"
+msgstr ", podrás registrar tus pagos, ver sedes, precios y mucho más"
+
 msgid "register"
 msgstr "🤖 Registrar - Actualizar Datos"
 
@@ -19,6 +25,21 @@ msgstr "💳 Registrar Pago"
 
 msgid "administrator"
 msgstr "🛠️ Administrar"
+
+msgid "administrator_options"
+msgstr "Opciones disponibles"
+
+msgid "administrator_payment_method"
+msgstr "🛠️ Formas de pago"
+
+msgid "administrator_payment_plans"
+msgstr "📋 Planes"
+
+msgid "administrator_payment_locations"
+msgstr "📍 Ubicaciones"
+
+msgid "administrator_payment_coaches"
+msgstr "🏅 Entrenadores"
 
 msgid "language"
 msgstr "🌐 Cambiar Idioma"
@@ -55,6 +76,18 @@ msgstr "Cancelar"
 
 msgid "process_canceled"
 msgstr "Proceso Cancelado"
+
+msgid "general_add"
+msgstr "➕ Crear"
+
+msgid "general_update"
+msgstr "✏️ Modificar"
+
+msgid "general_delete"
+msgstr "🗑️ Eliminar"
+
+msgid "general_list"
+msgstr "📋 Listar"
 
 ####################################################################################################
 ##########################################Usuarios##################################################
@@ -159,5 +192,64 @@ msgstr "Actualización de datos"
 ####################################################################################################
 ##########################################Payments##################################################
 ####################################################################################################
+
 msgid "get_payment_id"
 msgstr "Por favor, selecciona la forma de pago:"
+
+msgid "payment_amount"
+msgstr "Por favor, digita el monto a pagar:"
+
+msgid "payment_invalid"
+msgstr "Método de pago inválido seleccionado. Por favor, inténtelo de nuevo."
+
+msgid "payment_amount_invalid"
+msgstr "Monto inválido. Por favor, ingrese un número válido."
+
+msgid "payment_reference"
+msgstr "Por favor, ingrese la referencia de pago (o presione 'Skip' si no hay referencia)"
+
+msgid "payment_image"
+msgstr "Por favor, suba una foto o PDF del comprobante de pago:"
+
+msgid "payment_image_invalid"
+msgstr "Tipo de archivo inválido. Por favor, suba una imagen o un PDF."
+
+msgid "payment_confirm1"
+msgstr "Por favor, confirme los detalles del pago"
+
+msgid "payment_confirm2"
+msgstr "Método de Pago:"
+
+msgid "payment_confirm3"
+msgstr "Monto:"
+
+msgid "payment_confirm4"
+msgstr "Referencia:"
+
+msgid "payment_confirm_invalid"
+msgstr "Opción inválida seleccionada. Por favor, elija Sí, No o Cancelar."
+
+msgid "payment_restart"
+msgstr "Comencemos de nuevo"
+
+msgid "payment_canceled"
+msgstr "Registro de pago cancelado"
+
+msgid "payment_no_user"
+msgstr "No se pudo recuperar la información del usuario. Por favor, asegúrese de que su cuenta esté registrada."
+
+msgid "payment_success"
+msgstr "¡Pago registrado con éxito!"
+
+msgid "payment_failed"
+msgstr "No se pudo registrar el pago. Error"
+
+msgid "payment_fiat"
+msgstr "Seleccione a continuación el tipo de moneda a registrar"
+
+msgid "payment_fiat_invalid"
+msgstr "Moneda no existente, intente nuevamente"
+
+####################################################################################################
+####################################Payments Methods#################################################
+####################################################################################################

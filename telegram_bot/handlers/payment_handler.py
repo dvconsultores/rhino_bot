@@ -21,6 +21,14 @@ UPLOAD_DIR = "uploads"  # Directory for uploaded payment proofs
 # Dictionary to temporarily store payment data
 payment_data = {}
 
+# Define the is_float function
+def is_float(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
 def create_cancel_markup():
     """Create a reply markup with a 'Cancel' button."""
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
@@ -59,7 +67,7 @@ def start_payment(bot, message):
     item1 = types.KeyboardButton(_("general_cancel"))
     markup.row(item1)
 
-    bot.send_message(cid, "Please choose a payment method:", reply_markup=markup)
+    bot.send_message(cid, _("get_payment_id"), reply_markup=markup)
     bot.register_next_step_handler(message, lambda msg: handle_payment_method_selection(bot, msg, payment_methods))
 
 # Step 1b: Handle selected payment method from user’s message text
@@ -81,11 +89,12 @@ def handle_payment_method_selection(bot, message, payment_methods):
         payment_data[cid]["payment_method_id"] = selected_method["id"]
         payment_data[cid]["payment_method_name"] = selected_method_name  # Store the method name
         markup = create_cancel_markup()
-        bot.send_message(cid, "Please enter the payment amount:", reply_markup=markup)
+        bot.send_message(cid, _("payment_amount"), reply_markup=markup)
         bot.register_next_step_handler(message, lambda msg: handle_payment_amount(bot, msg))
     else:
-        bot.send_message(cid, "Invalid payment method selected. Please try again.")
+        bot.send_message(cid, _("payment_invalid"))
         bot.register_next_step_handler(message, lambda msg: handle_payment_method_selection(bot, msg, payment_methods))
+        
 
 def handle_payment_amount(bot, message):
     """Process the payment amount and confirm the payment."""
@@ -95,15 +104,15 @@ def handle_payment_amount(bot, message):
 
     cid = message.chat.id
     amount = message.text.strip()
-    if not amount.isdigit():
-        bot.send_message(cid, "Invalid amount. Please enter a valid number.")
+    if is_float(amount) == False:      
+        bot.send_message(cid, _("payment_amount_invalid"))
         bot.register_next_step_handler(message, lambda msg: handle_payment_amount(bot, msg))
         return
 
     payment_data[cid]["amount"] = float(amount)
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
     markup.add("Skip")
-    bot.send_message(cid, "Please enter the payment reference (or press 'Skip' if there's no reference):", reply_markup=markup)
+    bot.send_message(cid, _("payment_reference"), reply_markup=markup)
     bot.register_next_step_handler(message, lambda msg: process_payment_reference(bot, msg))
 
 # Step 3: Process payment reference
@@ -113,12 +122,11 @@ def process_payment_reference(bot, message):
     
     # Ask for payment proof (image or PDF)
     markup = create_cancel_markup()
-    bot.send_message(cid, "Please upload a photo or PDF of the payment proof:", reply_markup=markup)
+    bot.send_message(cid, _("payment_image"), reply_markup=markup)
     bot.register_next_step_handler(message, lambda msg: process_payment_proof(bot, msg))
 
 # Step 4: Process payment proof upload
 def process_payment_proof(bot, message):
-       
     cid = message.chat.id
     
     # Handle photo or document upload
@@ -127,8 +135,8 @@ def process_payment_proof(bot, message):
     elif message.content_type == 'document' and message.document.mime_type in ["application/pdf"]:
         file_id = message.document.file_id
     else:
-        bot.send_message(cid, "Invalid file type. Please upload an image or a PDF.")
-        bot.register_next_step_handler(message, process_payment_proof)
+        bot.send_message(cid, _("payment_image_invalid"))
+        bot.register_next_step_handler(message, lambda msg: process_payment_proof(bot, msg))
         return
 
     # Download and save the file
@@ -144,16 +152,16 @@ def process_payment_proof(bot, message):
     payment_data[cid]["proof"] = file_path
 
     # Display payment summary for confirmation
-    show_confirmation(cid)
+    show_confirmation(cid, bot)
 
 # Step 5: Show confirmation with collected data
-def show_confirmation(cid):
+def show_confirmation(cid, bot):
     data = payment_data[cid]
     confirmation_text = (
-        f"Please confirm the payment details:\n"
-        f"Payment Method: {data['payment_method_name']}\n"  # Display name instead of ID
-        f"Amount: {data['amount']}\n"
-        f"Reference: {data['reference'] or 'None'}\n"
+        _("payment_confirm1") + "\n\n" +
+        _("payment_confirm2") + f" {data['payment_method_name']}\n" +  # Display name instead of ID
+        _("payment_confirm3") + f" {data['amount']}\n" +
+        _("payment_confirm4") + f" {data['reference'] or 'None'}\n"
     )
 
     # Show confirmation options with Yes, No, and Cancel buttons
@@ -164,27 +172,56 @@ def show_confirmation(cid):
     markup.row(item1)
     markup.row(item2)
     markup.row(item3)
-    msg = bot.send_message(cid, confirmation_text, reply_markup=markup)
-    bot.register_next_step_handler(msg, lambda msg: confirmation_handler(msg, bot))  # Provide `message` and `bot`
 
-# Step 6: Handle confirmation callback queries
-def confirmation_handler(message, bot):
-    cid = call.message.chat.id
+    # Send message with confirmation options
+    msg = bot.send_message(cid, confirmation_text, reply_markup=markup, parse_mode="Markdown")
+    bot.register_next_step_handler(msg, lambda msg: confirmation_handler(bot, msg))  # Correct usage here
+
+# Step 6: Handle confirmation response
+def confirmation_handler(bot, message):
+    cid = message.chat.id
+
+    if message.text not in [_("general_yes"), _("general_no"), _("general_cancel")]:
+        bot.send_message(cid, _("payment_confirm_invalid"))
+        bot.register_next_step_handler(message, lambda msg: confirmation_handler(bot, msg))  # Correct usage here
+        return
    
-    if message.text ==  _("general_yes"):
+    if message.text == _("general_yes"):
         submit_payment(cid)  # Proceed with payment submission
+        bot.send_message(cid, _("procesing"))
     elif message.text == _("general_no"):
-        bot.send_message(cid, "Let's start over.")
-        start_payment(bot, call.message)  # Restart the payment process
+        bot.send_message(cid, _("payment_restart"))
+        start_payment(bot, message)  # Restart the payment process
     elif message.text == _("general_cancel"):
-        bot.send_message(cid, "Payment registration canceled.")
+        bot.send_message(cid, _("payment_canceled"))
         payment_data.pop(cid, None)  # Clear stored payment data
+
 
 # Submit payment to the API
 def submit_payment(cid):
+    # Step 1: Fetch user ID from the backend using the Telegram user ID (cid)
+    user_response = requests.get(f"{BASE_URL}/users/telegram/{cid}")
+    
+    # Handle cases where the user is not found or there is an error
+    if user_response.status_code != 200:
+        bot.send_message(cid, _("payment_no_user"))
+        return
+
+    # Extract the user ID from the response
+    user_data = user_response.json()
+    user_id = user_data.get('id')
+    
+    if not user_id:
+        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+        item1 = types.KeyboardButton(("/menu"))
+        markup.row(item1)
+        bot.send_message(cid, _("payment_no_user"), reply_markup=markup)
+        return
+    
+    # Step 2: Prepare payment data with the retrieved user ID
     data = payment_data[cid]
     payment_payload = {
-        'user_id': data['user_id'],
+        'user_id': user_id,  # Use the fetched user_id here
         'date': datetime.now().strftime('%Y-%m-%d'),
         'amount': data['amount'],
         'reference': data['reference'],
@@ -193,14 +230,15 @@ def submit_payment(cid):
         'month': datetime.now().month
     }
 
-    # Make API call to submit the payment data
+    # Step 3: Make API call to submit the payment data
     response = requests.post(f"{BASE_URL}/payments", json=payment_payload)
     markup_remove = types.ReplyKeyboardRemove()
     
+    # Step 4: Send confirmation to user based on API response
     if response.status_code == 201:
-        bot.send_message(cid, "Payment successfully registered!", reply_markup=markup_remove)
+        bot.send_message(cid, _("payment_success"), reply_markup=markup_remove)
     else:
-        bot.send_message(cid, f"Failed to register payment. Error: {response.status_code}", reply_markup=markup_remove)
+        bot.send_message(cid, ("payment_failed") + {response.status_code}, reply_markup=markup_remove)
 
-    # Clear stored data
+    # Step 5: Clear stored data
     payment_data.pop(cid, None)
