@@ -134,7 +134,7 @@ def process_payment_proof(bot, message):
     # Download and save the file
     file_info = bot.get_file(file_id)
     downloaded_file = bot.download_file(file_info.file_path)
-    file_name = f"{cid}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file_info.file_path.split('/')[-1]}"
+    file_name = f"{cid}_{datetime.now().strftime('%Y%m%d')}_{file_info.file_path.split('/')[-1]}"
     file_path = os.path.join(UPLOAD_DIR, file_name)
     os.makedirs(UPLOAD_DIR, exist_ok=True)
     with open(file_path, 'wb') as new_file:
