@@ -8,6 +8,13 @@ class Plans(db.Model):
     price = db.Column(db.Float, unique=False, nullable=False)
     creation_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'price': self.price
+        }
+
     def __repr__(self):
         fields = ', '.join(f'{key}={value}' for key, value in self.__dict__.items() if not key.startswith('_'))
-        return f'<User {fields}>'
+        return f'<Plan {fields}>'

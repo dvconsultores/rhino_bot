@@ -1,32 +1,151 @@
-# controllers/plan_controller.py
-from flask import Blueprint, request, jsonify
-from services.plan_service import get_all_plans, get_plan_by_id, create_plan, update_plan, delete_plan
+from flask import Blueprint, jsonify, request
+from flasgger import swag_from
+from models.plans import Plans
+from db import db
 
 plan_bp = Blueprint('plan', __name__)
 
 @plan_bp.route('/plans', methods=['GET'])
+@swag_from({
+    'responses': {
+        200: {
+            'description': 'List all plans',
+            'schema': {
+                'type': 'array',
+                'items': {
+                    'type': 'object',
+                    'properties': {
+                        'id': {'type': 'integer'},
+                        'name': {'type': 'string'},
+                        'price': {'type': 'number'}
+                    }
+                }
+            }
+        }
+    }
+})
 def get_plans():
-    plans = get_all_plans()
-    return jsonify([plan.__dict__ for plan in plans])
-
-@plan_bp.route('/plans/<int:plan_id>', methods=['GET'])
-def get_plan(plan_id):
-    plan = get_plan_by_id(plan_id)
-    return jsonify(plan.__dict__) if plan else ('', 404)
+    plans = Plans.query.all()
+    return jsonify([plan.to_dict() for plan in plans])
 
 @plan_bp.route('/plans', methods=['POST'])
-def add_plan():
+@swag_from({
+    'parameters': [
+        {
+            'name': 'body',
+            'in': 'body',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'name': {'type': 'string'},
+                    'price': {'type': 'number'}
+                },
+                'required': ['name', 'price']
+            }
+        }
+    ],
+    'responses': {
+        201: {
+            'description': 'Plan created successfully',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'id': {'type': 'integer'},
+                    'name': {'type': 'string'},
+                    'price': {'type': 'number'}
+                }
+            }
+        }
+    }
+})
+def create_plan():
     data = request.get_json()
-    new_plan = create_plan(data)
-    return jsonify(new_plan.__dict__), 201
+    new_plan = Plans(name=data['name'], price=data['price'])
+    db.session.add(new_plan)
+    db.session.commit()
+    return jsonify(new_plan.to_dict()), 201
 
 @plan_bp.route('/plans/<int:plan_id>', methods=['PUT'])
+@swag_from({
+    'parameters': [
+        {
+            'name': 'plan_id',
+            'in': 'path',
+            'type': 'integer',
+            'required': True,
+            'description': 'ID of the plan to update'
+        },
+        {
+            'name': 'body',
+            'in': 'body',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'name': {'type': 'string'},
+                    'price': {'type': 'number'}
+                },
+                'required': ['name', 'price']
+            }
+        }
+    ],
+    'responses': {
+        200: {
+            'description': 'Plan updated successfully',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'id': {'type': 'integer'},
+                    'name': {'type': 'string'},
+                    'price': {'type': 'number'}
+                }
+            }
+        },
+        404: {'description': 'Plan not found'}
+    }
+})
 def edit_plan(plan_id):
     data = request.get_json()
     updated_plan = update_plan(plan_id, data)
-    return jsonify(updated_plan.__dict__) if updated_plan else ('', 404)
+    return jsonify(updated_plan.to_dict()) if updated_plan else ('', 404)
+
+def update_plan(plan_id, data):
+    plan = Plans.query.get(plan_id)
+    if plan:
+        plan.name = data['name']
+        plan.price = data['price']
+        db.session.commit()
+        return plan
+    return None
 
 @plan_bp.route('/plans/<int:plan_id>', methods=['DELETE'])
+@swag_from({
+    'parameters': [
+        {
+            'name': 'plan_id',
+            'in': 'path',
+            'type': 'integer',
+            'required': True,
+            'description': 'ID of the plan to delete'
+        }
+    ],
+    'responses': {
+        200: {'description': 'Plan deleted successfully'},
+        404: {'description': 'Plan not found'}
+    }
+})
 def remove_plan(plan_id):
+    """Remove a plan
+    ---
+    tags:
+      - Plans
+    """
     deleted_plan = delete_plan(plan_id)
-    return jsonify(deleted_plan.__dict__) if deleted_plan else ('', 404)
+    return jsonify(deleted_plan.to_dict()) if deleted_plan else ('', 404)
+
+def delete_plan(plan_id):
+    plan = Plans.query.get(plan_id)
+    if plan:
+        db.session.delete(plan)
+        db.session.commit()
+        return plan
+    return None

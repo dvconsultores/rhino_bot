@@ -6,6 +6,7 @@ from handlers.language_handler import edit_language, language_middleware
 from handlers.user_handler import get_user, create_user
 from handlers.payment_handler import start_payment
 from handlers.payment_methods_handler import show_payment_method_list, list_payment_methods_for_selection, add_payment_method_handler, delete_payment_method_handler, edit_payment_method_handler 
+from handlers.plans_handler import add_plan_handler, list_plans_for_selection, delete_plan_handler, edit_plan_handler, list_plans
 
 # Load .env file
 load_dotenv()
@@ -44,7 +45,7 @@ def command_list(message):
 @bot.callback_query_handler(func=lambda call: True)
 def callback_handler(call):
     cid = call.message.chat.id
-    print(f"Callback data received: {call.data}")  # Debug statement
+    # print(f"Callback data received: {call.data}")  # Debug statement
     options = {
         'menu': command_list,
         'edit_language': lambda msg: edit_language(bot, msg),
@@ -54,7 +55,8 @@ def callback_handler(call):
         # Administrator options
         'listAdmin': listAdmin,
         'payment_method_menu': payment_method_menu,
-        'users_menu': users_menu,
+        'plans_menu': plans_menu,
+         # 'users_menu': users_menu,
         'locations_menu': locations_menu,
         'coaches_menu': coaches_menu,
 
@@ -62,7 +64,13 @@ def callback_handler(call):
         'show_payment_method_list': lambda msg: show_payment_method_list(bot, msg),
         'delete_payment_method_handler': lambda msg: delete_payment_method_handler(bot, msg),
         'edit_payment_method_handler': lambda msg: edit_payment_method_handler(bot, msg),
-        'add_payment_method_handler': lambda msg: add_payment_method_handler(bot, msg)
+        'add_payment_method_handler': lambda msg: add_payment_method_handler(bot, msg),
+
+        # Plans options
+        'add_plan_handler': lambda msg: add_plan_handler(bot, msg),
+        'delete_plan_handler': lambda msg: delete_plan_handler(bot, msg),
+        'edit_plan_handler': lambda msg: edit_plan_handler(bot, msg),
+        'list_plans': lambda msg: list_plans(bot, msg)
     }
     func = options.get(call.data)
     if func:
@@ -76,7 +84,7 @@ def listAdmin(m):
     help_text =  _("administrator_options")
     # Define the buttons
     button1 = InlineKeyboardButton(_("administrator_payment_method"), callback_data="payment_method_menu")
-    button2 = InlineKeyboardButton(_("administrator_payment_plans"), callback_data="users_menu")
+    button2 = InlineKeyboardButton(_("administrator_payment_plans"), callback_data="plans_menu")
     button3 = InlineKeyboardButton(_("administrator_payment_locations"), callback_data="locations_menu")
     button4 = InlineKeyboardButton(_("administrator_payment_coaches"), callback_data="coaches_menu")
 
@@ -90,7 +98,7 @@ def listAdmin(m):
 
 def payment_method_menu(m):
     cid = m.chat.id
-    help_text =  _("administrator_options")
+    help_text =  _("administrator_options") + ' - ' + _("administrator_payment_method")
     # Define the buttons
     button1 = InlineKeyboardButton(_("general_add"), callback_data="add_payment_method_handler")
     button2 = InlineKeyboardButton(_("general_update"), callback_data="edit_payment_method_handler")
@@ -105,9 +113,9 @@ def payment_method_menu(m):
     reply_markup = InlineKeyboardMarkup(buttons)    
     bot.send_message(cid, help_text, reply_markup=reply_markup)  
 
-def users_menu(m):
+def payment_menu(m):
     cid = m.chat.id
-    help_text =  _("administrator_options")
+    help_text =  _("administrator_options") + ' - ' + _("administrator_payment_method")
     # Define the buttons
     button1 = InlineKeyboardButton(_("general_add"), callback_data="add_payment_method_handler")
     button2 = InlineKeyboardButton(_("general_update"), callback_data="edit_payment_method_handler")
@@ -124,7 +132,7 @@ def users_menu(m):
 
 def locations_menu(m):
     cid = m.chat.id
-    help_text =  _("administrator_options")
+    help_text =  _("administrator_options") + ' - ' + _("administrator_payment_locations")
     # Define the buttons
     button1 = InlineKeyboardButton(_("general_add"), callback_data="add_payment_method_handler")
     button2 = InlineKeyboardButton(_("general_update"), callback_data="edit_payment_method_handler")
@@ -141,7 +149,7 @@ def locations_menu(m):
 
 def coaches_menu(m):
     cid = m.chat.id
-    help_text =  _("administrator_options")
+    help_text =  _("administrator_options") + ' - ' + _("administrator_payment_coaches")
     # Define the buttons
     button1 = InlineKeyboardButton(_("general_add"), callback_data="add_payment_method_handler")
     button2 = InlineKeyboardButton(_("general_update"), callback_data="edit_payment_method_handler")
@@ -154,7 +162,24 @@ def coaches_menu(m):
 
     # Create the keyboard markup
     reply_markup = InlineKeyboardMarkup(buttons)    
-    bot.send_message(cid, help_text, reply_markup=reply_markup)                              
+    bot.send_message(cid, help_text, reply_markup=reply_markup) 
+
+def plans_menu(m):
+    cid = m.chat.id
+    help_text =  _("administrator_options") + ' - ' + _("administrator_payment_method")
+    # Define the buttons
+    button1 = InlineKeyboardButton(_("general_add"), callback_data="add_plan_handler")
+    button2 = InlineKeyboardButton(_("general_update"), callback_data="edit_plan_handler")
+    button3 = InlineKeyboardButton(_("general_delete"), callback_data="delete_plan_handler")
+    button4 = InlineKeyboardButton(_("general_list"), callback_data="list_plans")
+
+    # Create a nested list of buttons
+    buttons = [[button1], [button2], [button3], [button4]]
+    buttons[1].sort(key=lambda btn: btn.text)
+
+    # Create the keyboard markup
+    reply_markup = InlineKeyboardMarkup(buttons)    
+    bot.send_message(cid, help_text, reply_markup=reply_markup)                                 
 
 
 bot.polling()

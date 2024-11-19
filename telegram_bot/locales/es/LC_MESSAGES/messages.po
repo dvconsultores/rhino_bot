@@ -253,3 +253,68 @@ msgstr "Moneda no existente, intente nuevamente"
 ####################################################################################################
 ####################################Payments Methods#################################################
 ####################################################################################################
+msgid "payment_fetch_fail"
+msgstr "No se pudo obtener los métodos de pago. Por favor, inténtelo de nuevo más tarde."
+
+msgid "payment_fetch_not_available"
+msgstr "No hay métodos de pago disponibles."
+
+msgid "payment_fetch_available"
+msgstr "Métodos de Pago Disponibles:"
+
+msgid "payment_id"
+msgstr "ID"
+
+msgid "payment_name"
+msgstr "Nombre"
+
+msgid "payment_add_ask_name"
+msgstr "Por favor, ingrese el nombre del nuevo método de pago:"
+
+msgid "payment_method_success"
+msgstr "¡Nuevo método de pago añadido con éxito!"
+
+msgid "payment_method_error"
+msgstr "No se pudo añadir el método de pago. Por favor, inténtelo de nuevo."
+
+msgid "payment_validate_error"
+msgstr "El nombre del método de pago no puede estar vacío. Por favor, inténtelo de nuevo."
+
+msgid "payment_select_action"
+msgstr "Por favor, seleccione un método de pago para"
+
+msgid "payment_delete_action_invalid"
+msgstr "Selección inválida. Por favor, inténtelo de nuevo."
+
+msgid "payment_delete_action_invalid_input"
+msgstr "Entrada inválida. Por favor, inténtelo de nuevo."
+
+msgid "payment_delete_yes"
+msgstr "Sí, Eliminar"
+
+msgid "payment_delete_confirm"
+msgstr "¿Está seguro de que desea eliminar?"
+
+msgid "payment_delete_canceled"
+msgstr "Eliminar cancelado."
+
+msgid "payment_delete_deleted"
+msgstr "Método de pago eliminado con éxito."
+
+msgid "payment_delete_in_use"
+msgstr "No se puede eliminar el método de pago seleccionado porque está en uso."
+
+msgid "payment_update_ask"
+msgstr "Ingrese el nuevo nombre para"
+
+msgid "payment_update_invalid"
+msgstr "Selección inválida. Por favor, inténtelo de nuevo."
+
+msgid "payment_update_success"
+msgstr "¡Método de pago actualizado con éxito!"
+
+msgid "payment_update_error"
+msgstr "No se pudo actualizar el método de pago. Por favor, inténtelo de nuevo."
+
+msgid "payment_update_error_empty"
+msgstr "El nombre del método no puede estar vacío."

@@ -28,7 +28,7 @@ def cancel_process(bot, message):
     item1 = types.KeyboardButton(("/menu"))
     markup.row(item1)
     bot.send_message(cid, _("process_canceled"), reply_markup=markup)
-    user_data.pop(cid, None)  # Clear user data after cancellation
+    # user_data.pop(cid, None)  # Clear user data after cancellation
 
 def show_payment_method_list(bot, message):
     """
@@ -38,49 +38,59 @@ def show_payment_method_list(bot, message):
     response = requests.get(f"{BASE_URL}/payment_methods")
     
     if response.status_code != 200:
-        bot.send_message(message.chat.id, "Failed to fetch payment methods. Please try again later.")
+        bot.send_message(message.chat.id, _("payment_fetch_fail"))
         return
     
     payment_methods = response.json()
     
     # Check if there are any payment methods available
     if not payment_methods:
-        bot.send_message(message.chat.id, "No payment methods available.")
+        bot.send_message(message.chat.id, _("payment_fetch_not_available"))
         return
 
     # Build a list of payment methods to display
-    payment_methods_text = "*Available Payment Methods:*\n"
+    payment_methods_text = "*" + _("payment_fetch_available") + "*" + "\n"
     for method in payment_methods:
         method_name = method.get("method")
         method_id = method.get("id")
-        payment_methods_text += f"🔹 *ID*: {method_id} - *Name*: {method_name}\n"
+        payment_methods_text += f"🔹 *{_('payment_id')}*: {method_id} - *{_('payment_name')}*: {method_name}\n"
+
+
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+    item1 = types.KeyboardButton(("/menu"))
+    markup.row(item1)
 
     # Send the list to the admin user
-    bot.send_message(message.chat.id, payment_methods_text, parse_mode="Markdown")
+    bot.send_message(message.chat.id, payment_methods_text, parse_mode="Markdown", reply_markup=markup)
 
 # Function to prompt admin to add a new payment method
 def add_payment_method_handler(bot, message):
     markup = create_cancel_markup()
     """Ask the admin for the new payment method name."""
-    bot.send_message(message.chat.id, "Please enter the name for the new payment method:", reply_markup=markup)
+    bot.send_message(message.chat.id, _("payment_add_ask_name"), reply_markup=markup)
     bot.register_next_step_handler(message, lambda msg: submit_new_payment_method(bot, msg))
 
 # Function to handle the submission of the new payment method
 def submit_new_payment_method(bot, message):
+    """Process the payment amount and confirm the payment."""
+    if message.text.strip().lower() == _("general_cancel").lower():
+        cancel_process(bot, message)
+        return
+
     cid = message.chat.id
     new_method_name = message.text.strip()
     
     if new_method_name:
-        bot.send_message(cid, "Processing...")
+        bot.send_message(cid, _("procesing"))
         response = requests.post(f"{BASE_URL}/payment_methods", json={"method": new_method_name})
         
         if response.status_code == 201:
-            bot.send_message(cid, "New payment method added successfully!")
+            bot.send_message(cid, _("payment_method_success"))
             show_payment_method_list(bot, message)
         else:
-            bot.send_message(cid, "Failed to add payment method. Please try again.")
+            bot.send_message(cid, _("payment_method_error"))
     else:
-        bot.send_message(cid, "Payment method name cannot be empty. Please try again.")
+        bot.send_message(cid, _("payment_validate_error"))
         add_payment_method_handler(bot, message)  # Retry adding if input was empty
 
 # List all payment methods for selection
@@ -97,8 +107,8 @@ def list_payment_methods_for_selection(bot, message, action):
             for method in payment_methods:
                 button = types.KeyboardButton(f"{method['id']}: {method['method']}")
                 markup.add(button)
-            markup.add(types.KeyboardButton("Cancelar"))
-            bot.send_message(cid, f"Please select a payment method to {action}:", reply_markup=markup)
+            markup.add(types.KeyboardButton(_("general_cancel")))
+            bot.send_message(cid, f"{_('payment_fetch_available')}", reply_markup=markup)
             
             # Register the next step handler based on the action (edit or delete)
             if action == "delete":
@@ -106,9 +116,9 @@ def list_payment_methods_for_selection(bot, message, action):
             elif action == "edit":
                 bot.register_next_step_handler(message, lambda msg: handle_edit_selection(bot, msg, payment_methods))
         else:
-            bot.send_message(cid, "No payment methods available.")
+            bot.send_message(cid, _("payment_fetch_not_available"))
     else:
-        bot.send_message(cid, "Failed to fetch payment methods.")
+        bot.send_message(cid, _("payment_fetch_fail"))
 
 # Handler for selecting a payment method to delete
 def handle_delete_selection(bot, message, payment_methods):
@@ -127,20 +137,20 @@ def handle_delete_selection(bot, message, payment_methods):
         if selected_method:
             confirm_delete_method(bot, message, selected_method)
         else:
-            bot.send_message(cid, "Invalid selection. Please try again.")
+            bot.send_message(cid, _("payment_delete_action_invalid"))
             list_payment_methods_for_selection(bot, message, "delete")
     except ValueError:
-        bot.send_message(cid, "Invalid input. Please try again.")
+        bot.send_message(cid, _("payment_delete_action_invalid_input"))
         list_payment_methods_for_selection(bot, message, "delete")
 
 # Confirmation for deletion
 def confirm_delete_method(bot, message, selected_method):
     cid = message.chat.id
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
-    markup.row(types.KeyboardButton("Yes, Delete"), types.KeyboardButton("Cancel"))
+    markup.row(types.KeyboardButton(_("payment_delete_yes")), types.KeyboardButton(_("general_cancel")))
     
     # Send the confirmation message
-    bot.send_message(cid, f"Are you sure you want to delete '{selected_method['method']}'?", reply_markup=markup)
+    bot.send_message(cid, _("payment_delete_yes") + "'{selected_method['method']}'" + "?", reply_markup=markup)
     
     # Register the next step handler to capture the confirmation response
     bot.register_next_step_handler(message, lambda msg: handle_delete_confirmation(bot, msg, selected_method['id']))
@@ -149,15 +159,15 @@ def confirm_delete_method(bot, message, selected_method):
 def handle_delete_confirmation(bot, message, payment_method_id):
     cid = message.chat.id
     
-    if message.text == "Yes, Delete":
+    if message.text == _("payment_delete_yes"):
         delete_payment_method(bot, message, payment_method_id)
     else:
-        bot.send_message(cid, "Deletion canceled.")
+        bot.send_message(cid, _("payment_delete_canceled"))
 
 # Perform deletion
 def delete_payment_method(bot, message, payment_method_id):
     cid = message.chat.id
-    bot.send_message(cid, "Processing your request...")
+    bot.send_message(cid, _("procesing"))
     
     response = requests.delete(f"{BASE_URL}/payment_methods/{payment_method_id}")
     
@@ -165,9 +175,9 @@ def delete_payment_method(bot, message, payment_method_id):
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
         item1 = types.KeyboardButton(("/menu"))
         markup.row(item1)
-        bot.send_message(cid, "Payment method deleted successfully.", relpy_markup=markup)
+        bot.send_message(cid, _("payment_delete_deleted"), reply_markup=markup)
     else:
-        bot.send_message(cid, "No se puede eliminar el método de pago seleccionado porque está en uso.")
+        bot.send_message(cid, _("payment_delete_in_use"))
     
     # Return to the list of payment methods
     show_payment_method_list(bot, message)
@@ -187,13 +197,13 @@ def handle_edit_selection(bot, message, payment_methods):
         selected_method = next((m for m in payment_methods if m['id'] == method_id), None)
         
         if selected_method:
-            bot.send_message(cid, f"Enter the new name for '{selected_method['method']}':")
+            bot.send_message(cid,f"{_('payment_update_ask')} {selected_method['method']}:")
             bot.register_next_step_handler(message, lambda msg: edit_payment_method(bot, msg, selected_method['id']))
         else:
-            bot.send_message(cid, "Invalid selection. Please try again.")
+            bot.send_message(cid, _("payment_update_invalid"))
             list_payment_methods_for_selection(bot, message, "edit")
     except ValueError:
-        bot.send_message(cid, "Invalid input. Please try again.")
+        bot.send_message(cid, _("payment_update_invalid"))
         list_payment_methods_for_selection(bot, message, "edit")
 
 # Perform update
@@ -202,17 +212,17 @@ def edit_payment_method(bot, message, payment_method_id):
     new_name = message.text.strip()
     
     if new_name:
-        bot.send_message(cid, "Processing...")
+        bot.send_message(cid, _("procesing"))
         response = requests.put(f"{BASE_URL}/payment_methods/{payment_method_id}", json={"method": new_name})
         if response.status_code == 200:
             markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
             item1 = types.KeyboardButton(("/menu"))
             markup.row(item1)
-            bot.send_message(cid, "Payment method updated successfully!", reply_markup=markup)
+            bot.send_message(cid, _("payment_update_success"), reply_markup=markup)
         else:
-            bot.send_message(cid, "Failed to update payment method. Please try again.")
+            bot.send_message(cid, _("payment_update_error"))
     else:
-        bot.send_message(cid, "Method name cannot be empty.")
+        bot.send_message(cid, _("payment_update_error_empty"))
     
     # Return to main payment methods list after action
     show_payment_method_list(bot, message)
