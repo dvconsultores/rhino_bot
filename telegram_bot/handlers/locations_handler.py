@@ -168,10 +168,14 @@ def handle_edit_location_selection(bot, message, locations):
         location_id = int(choice.split(":")[0].strip())
         selected_location = next((loc for loc in locations if loc['id'] == location_id), None)
 
+        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+        markup.add("Skip")   
+
         if selected_location:
             bot.send_message(
                 cid,
-                f"{_('locations_current')} '{selected_location['location']}'. {_('locations_new')}"
+                f"{_('locations_current')} '{selected_location['location']}'. {_('locations_new')}",
+                reply_markup=markup
             )
             bot.register_next_step_handler(message, lambda msg: handle_edit_location_name(bot, msg, selected_location))
         else:
@@ -194,12 +198,16 @@ def handle_edit_location_name(bot, message, location):
         cancel_process(bot, message)
         return
 
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+    markup.add("Skip")     
+
     if new_location_name.lower() == "skip":
         new_location_name = location['location']
 
     bot.send_message(
         cid,
-        f"{_('locations_current_address')} '{location['address']}'. {_('locations_new_address')}"
+        f"{_('locations_current_address')} '{location['address']}'. {_('locations_new_address')}",
+        reply_markup=markup
     )
     bot.register_next_step_handler(
         message, lambda msg: submit_edited_location(bot, msg, location['id'], new_location_name)
@@ -271,7 +279,7 @@ def handle_delete_location_selection(bot, message, locations):
 def confirm_delete_location(bot, message, location):
     cid = message.chat.id
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
-    markup.row(types.KeyboardButton("Yes"), types.KeyboardButton("Cancel"))
+    markup.row(types.KeyboardButton(_("general_yes")), types.KeyboardButton(_("general_cancel")))
 
     bot.send_message(cid, f"{_('payment_delete_confirm')} '{location['location']}'?", reply_markup=markup)
     bot.register_next_step_handler(message, lambda msg: execute_delete_location(bot, msg, location['id']))
@@ -283,13 +291,15 @@ def execute_delete_location(bot, message, location_id):
     """
     cid = message.chat.id
 
-    if message.text.strip().lower() == _("general_yes"):
+    if message.text == _("general_yes"):
         response = requests.delete(f"{BASE_URL}/locations/{location_id}")
         bot.send_message(cid, _("procesing"))
+        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+        markup.add(types.KeyboardButton("/menu"))
         if response.status_code == 200:
-            bot.send_message(cid, _("plans_success"))
+            bot.send_message(cid, _("plans_success"), reply_markup=markup)
         else:
-            bot.send_message(cid, _("plans_fails"))
+            bot.send_message(cid, _("plans_fails"), reply_markup=markup)
     else:
         bot.send_message(cid, _("plans_success"))
 

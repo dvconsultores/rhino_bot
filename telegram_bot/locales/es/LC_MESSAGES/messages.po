@@ -386,7 +386,7 @@ msgstr "Plan cancelado"
 ##########################################Locations#################################################
 ####################################################################################################
 msgid "locations_available"
-msgstr "Ubicaciones disponibles"
+msgstr "Ubicaciones disponibles:"
 
 msgid "locations_id"
 msgstr "Id"
