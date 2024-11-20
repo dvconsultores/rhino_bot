@@ -7,6 +7,7 @@ from handlers.user_handler import get_user, create_user
 from handlers.payment_handler import start_payment
 from handlers.payment_methods_handler import show_payment_method_list, list_payment_methods_for_selection, add_payment_method_handler, delete_payment_method_handler, edit_payment_method_handler 
 from handlers.plans_handler import add_plan_handler, list_plans_for_selection, delete_plan_handler, edit_plan_handler, list_plans
+from handlers.locations_handler import list_locations, add_location_handler, handle_edit_location, handle_delete_location
 
 # Load .env file
 load_dotenv()
@@ -70,7 +71,13 @@ def callback_handler(call):
         'add_plan_handler': lambda msg: add_plan_handler(bot, msg),
         'delete_plan_handler': lambda msg: delete_plan_handler(bot, msg),
         'edit_plan_handler': lambda msg: edit_plan_handler(bot, msg),
-        'list_plans': lambda msg: list_plans(bot, msg)
+        'list_plans': lambda msg: list_plans(bot, msg),
+
+        # Locations options
+        'list_locations': lambda msg: list_locations(bot, msg),
+        'add_location_handler': lambda msg: add_location_handler(bot, msg),
+        'handle_edit_location': lambda msg: handle_edit_location(bot, msg),
+        'handle_delete_location': lambda msg: handle_delete_location(bot, msg)
     }
     func = options.get(call.data)
     if func:
@@ -134,10 +141,10 @@ def locations_menu(m):
     cid = m.chat.id
     help_text =  _("administrator_options") + ' - ' + _("administrator_payment_locations")
     # Define the buttons
-    button1 = InlineKeyboardButton(_("general_add"), callback_data="add_payment_method_handler")
-    button2 = InlineKeyboardButton(_("general_update"), callback_data="edit_payment_method_handler")
-    button3 = InlineKeyboardButton(_("general_delete"), callback_data="delete_payment_method_handler")
-    button4 = InlineKeyboardButton(_("general_list"), callback_data="show_payment_method_list")
+    button1 = InlineKeyboardButton(_("general_add"), callback_data="add_location_handler")
+    button2 = InlineKeyboardButton(_("general_update"), callback_data="handle_edit_location")
+    button3 = InlineKeyboardButton(_("general_delete"), callback_data="handle_delete_location")
+    button4 = InlineKeyboardButton(_("general_list"), callback_data="list_locations")
 
     # Create a nested list of buttons
     buttons = [[button1], [button2], [button3], [button4]]

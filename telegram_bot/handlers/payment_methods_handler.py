@@ -162,7 +162,7 @@ def handle_delete_confirmation(bot, message, payment_method_id):
     if message.text == _("payment_delete_yes"):
         delete_payment_method(bot, message, payment_method_id)
     else:
-        bot.send_message(cid, _("payment_delete_canceled"))
+        bot.send_message(cid, _("plans_canceled"))
 
 # Perform deletion
 def delete_payment_method(bot, message, payment_method_id):

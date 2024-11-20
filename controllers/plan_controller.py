@@ -7,6 +7,7 @@ plan_bp = Blueprint('plan', __name__)
 
 @plan_bp.route('/plans', methods=['GET'])
 @swag_from({
+    'tags': ['Plans'],
     'responses': {
         200: {
             'description': 'List all plans',
@@ -30,6 +31,7 @@ def get_plans():
 
 @plan_bp.route('/plans', methods=['POST'])
 @swag_from({
+    'tags': ['Plans'],
     'parameters': [
         {
             'name': 'body',
@@ -60,6 +62,9 @@ def get_plans():
 })
 def create_plan():
     data = request.get_json()
+    if not data or 'name' not in data or 'price' not in data:
+        return jsonify({"error": "Invalid input"}), 400
+
     new_plan = Plans(name=data['name'], price=data['price'])
     db.session.add(new_plan)
     db.session.commit()
@@ -67,6 +72,7 @@ def create_plan():
 
 @plan_bp.route('/plans/<int:plan_id>', methods=['PUT'])
 @swag_from({
+    'tags': ['Plans'],
     'parameters': [
         {
             'name': 'plan_id',
@@ -119,6 +125,7 @@ def update_plan(plan_id, data):
 
 @plan_bp.route('/plans/<int:plan_id>', methods=['DELETE'])
 @swag_from({
+    'tags': ['Plans'],
     'parameters': [
         {
             'name': 'plan_id',

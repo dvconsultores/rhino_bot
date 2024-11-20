@@ -318,3 +318,117 @@ msgstr "No se pudo actualizar el método de pago. Por favor, inténtelo de nuevo
 
 msgid "payment_update_error_empty"
 msgstr "El nombre del método no puede estar vacío."
+
+####################################################################################################
+##########################################Plans#####################################################
+####################################################################################################
+msgid "available_plans"
+msgstr "Planes disponibles"
+
+msgid "plans_id"
+msgstr "Id"
+
+msgid "plans_name"
+msgstr "Nombre"
+
+msgid "plans_price"
+msgstr "Precio"
+
+msgid "plans_not_available"
+msgstr "Planes no disponibles"
+
+msgid "plans_fetch_fails"
+msgstr "Error para consultar planes, intente nuevamente"
+
+msgid "plans_input_name"
+msgstr "Por favor ingrese el nombre del plan:"
+
+msgid "plans_input_name_no_empty"
+msgstr "El nombre no puede estar en blanco, por favor intente nuevamente:"
+
+msgid "plans_input_price"
+msgstr "Por favor ingrese el precio del plan:"
+
+msgid "plans_input_price_no_empty"
+msgstr "Precio inválido, por favor intente nuevamente:"
+
+msgid "plans_success"
+msgstr "Proceso ejecutado con éxito"
+
+msgid "plans_fails"
+msgstr "Error, intente nuevamente"
+
+msgid "plans_selection"
+msgstr "Seleccione un plan para proceder"
+
+msgid "plans_update_text1"
+msgstr "Ingrese el nuevo nombre del plan"
+
+msgid "plans_update_text2"
+msgstr "O pulse 'Skip' para mantenerlo:"
+
+msgid "plans_update_text3"
+msgstr "Ingrese el nuevo precio del plan"
+
+msgid "plans_invalid_selection"
+msgstr "Selección inválida, intente nuevamente"
+
+msgid "plans_delete_confirm"
+msgstr "Está seguro que desea eliminar el plan"
+
+msgid "plans_delete_deleted"
+msgstr "Plan eliminado"
+
+msgid "plans_canceled"
+msgstr "Plan cancelado"
+
+####################################################################################################
+##########################################Locations#################################################
+####################################################################################################
+msgid "locations_available"
+msgstr "Ubicaciones disponibles"
+
+msgid "locations_id"
+msgstr "Id"
+
+msgid "locations_locations"
+msgstr "Ubicación"
+
+msgid "locations_address"
+msgstr "Dirección"
+
+msgid "locations_not_available"
+msgstr "Ubicaciones no disponibles"
+
+msgid "locations_failed_fetch"
+msgstr "Error para listar ubicaciones, intente nuevamente"
+
+msgid "locations_name"
+msgstr "Por favor ingrese el nombre de la ubicación:"
+
+msgid "locations_no_empty"
+msgstr "El registro no puede ser nulo, intente nuevamente."
+
+msgid "locations_location"
+msgstr "Por favor ingrese la dirección:"
+
+msgid "locations_list"
+msgstr "Seleccione la ubicación para proceder:"
+
+msgid "locations_invalid_selection"
+msgstr "Selección inválida, intente nuevamente."
+
+msgid "locations_current"
+msgstr "Ubicación actual:"
+
+msgid "locations_new"
+msgstr "Coloque el nombre de la nueva ubicación o pulse 'skip' para mantenerlo igual:"
+
+msgid "locations_current_address"
+msgstr "Dirección actual:"
+
+msgid "locations_new_address"
+msgstr "Coloque la nueva dirección o pulse 'skip' para mantenerlo igual:"
+
+msgid "locations_new_address_fail"
+msgstr "Coloque la nueva dirección o pulse 'skip' para mantenerlo igual:"

@@ -29,7 +29,7 @@ def cancel_process(bot, message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
     item1 = types.KeyboardButton("/menu")
     markup.row(item1)
-    bot.send_message(cid, "Process canceled.", reply_markup=markup)
+    bot.send_message(cid, _("process_canceled"), reply_markup=markup)
 
 
 def list_plans(bot, message):
@@ -44,18 +44,18 @@ def list_plans(bot, message):
 
         if plans:
             # Build a text representation of the plans
-            plans_text = "*Available Plans:*\n"
+            plans_text = _("available_plans") + "\n"
             for plan in plans:
-                plans_text += f"🔹 *ID*: {plan['id']} - *Name*: {plan['name']} - *Price*: ${plan['price']}\n"
+                plans_text += f"🔹 *{_('plans_id')}*: {plan['id']} - *{_('plans_name')}*: {plan['name']} - *{_('plans_price')}*: ${plan['price']}\n"
 
             # Send the list of plans to the user
             markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
             markup.add(types.KeyboardButton("/menu"))
             bot.send_message(cid, plans_text, parse_mode="Markdown", reply_markup=markup)
         else:
-            bot.send_message(cid, "No plans available.")
+            bot.send_message(cid, _('plans_not_available'))
     else:
-        bot.send_message(cid, "Failed to fetch plans. Please try again later.")
+        bot.send_message(cid, _('plans_fetch_fails'))
 
 
 # Add a new plan
@@ -64,7 +64,7 @@ def add_plan_handler(bot, message):
     Start the process of adding a new plan.
     """
     markup = create_cancel_markup()
-    bot.send_message(message.chat.id, "Please enter the name of the new plan:", reply_markup=markup)
+    bot.send_message(message.chat.id, _('plans_input_name'), reply_markup=markup)
     bot.register_next_step_handler(message, lambda msg: add_plan_name_handler(bot, msg))
 
 
@@ -72,18 +72,18 @@ def add_plan_name_handler(bot, message):
     """
     Handle the name input for the new plan and ask for the price.
     """
-    if message.text.strip().lower() == "cancel":
+    if message.text.strip().lower() == _('general_cancel'):
         cancel_process(bot, message)
         return
 
     plan_name = message.text.strip()
 
     if not plan_name:
-        bot.send_message(message.chat.id, "Plan name cannot be empty. Please try again.")
+        bot.send_message(message.chat.id, _('plans_input_name_no_empty'))
         add_plan_handler(bot, message)
         return
 
-    bot.send_message(message.chat.id, "Please enter the price for the plan:")
+    bot.send_message(message.chat.id, _('plans_input_price'))
     bot.register_next_step_handler(message, lambda msg: submit_new_plan(bot, msg, plan_name))
 
 
@@ -91,14 +91,14 @@ def submit_new_plan(bot, message, plan_name):
     """
     Submit the new plan to the backend.
     """
-    if message.text.strip().lower() == "cancel":
+    if message.text.strip().lower() == _('general_cancel'):
         cancel_process(bot, message)
         return
 
     try:
         plan_price = float(message.text.strip())
     except ValueError:
-        bot.send_message(message.chat.id, "Invalid price. Please enter a valid number.")
+        bot.send_message(message.chat.id, _('plans_input_price_no_empty'))
         bot.register_next_step_handler(message, lambda msg: submit_new_plan(bot, msg, plan_name))
         return
 
@@ -106,10 +106,10 @@ def submit_new_plan(bot, message, plan_name):
     response = requests.post(f"{BASE_URL}/plans", json=data)
 
     if response.status_code == 201:
-        bot.send_message(message.chat.id, "Plan added successfully!")
+        bot.send_message(message.chat.id, _('plans_success'))
         list_plans(bot, message)
     else:
-        bot.send_message(message.chat.id, "Failed to add the plan. Please try again.")
+        bot.send_message(message.chat.id,  _('plans_fails'))
 
 
 # List all plans for selection
@@ -129,8 +129,8 @@ def list_plans_for_selection(bot, message, action):
             for plan in plans:
                 button = types.KeyboardButton(f"{plan['id']}: {plan['name']} (${plan['price']})")
                 markup.add(button)
-            markup.add(types.KeyboardButton("Cancel"))
-            bot.send_message(cid, "Select a plan to proceed:", reply_markup=markup)
+            markup.add(types.KeyboardButton(_('general_cancel')))
+            bot.send_message(cid, _('plans_selection'), reply_markup=markup)
 
             # Register the next step handler based on the action (edit or delete)
             if action == "delete":
@@ -138,9 +138,9 @@ def list_plans_for_selection(bot, message, action):
             elif action == "edit":
                 bot.register_next_step_handler(message, lambda msg: handle_edit_plan_selection(bot, msg, plans))
         else:
-            bot.send_message(cid, "No plans available.")
+            bot.send_message(cid, _('plans_not_available'))
     else:
-        bot.send_message(cid, "Failed to fetch plans. Please try again later.")
+        bot.send_message(cid, _('plans_fetch_fails'))
 
 def handle_edit_plan_selection(bot, message, plans):
     """
@@ -164,15 +164,15 @@ def handle_edit_plan_selection(bot, message, plans):
         if selected_plan:
             bot.send_message(
                 cid,
-                f"Enter the new name for the plan '{selected_plan['name']}' or type 'skip' to keep it unchanged:"
+                f"{_('plans_update_text1')} '{selected_plan['name']}' {_('plans_update_text2')}"
                 , reply_markup=markup
             )
             bot.register_next_step_handler(message, lambda msg: handle_edit_plan_name(bot, msg, selected_plan))
         else:
-            bot.send_message(cid, "Invalid selection. Please try again.")
+            bot.send_message(cid, _('plans_update_text1'))
             list_plans_for_selection(bot, message, "edit")
     except (ValueError, IndexError):
-        bot.send_message(cid, "Invalid input. Please try again.")
+        bot.send_message(cid, _('plans_invalid_selection'))
         list_plans_for_selection(bot, message, "edit")
 
 def handle_edit_plan_name(bot, message, plan):
@@ -182,7 +182,7 @@ def handle_edit_plan_name(bot, message, plan):
     cid = message.chat.id
     new_name = message.text.strip()
 
-    if new_name.lower() == "cancel":
+    if new_name.lower() ==  _('general_cancel'):
         cancel_process(bot, message)
         return
 
@@ -194,7 +194,7 @@ def handle_edit_plan_name(bot, message, plan):
 
     bot.send_message(
         cid,
-        f"Enter the new price for the plan '{new_name}' or type 'skip' to keep it unchanged:"
+        f"{_('plans_update_text3')}'{new_name}' {_('plans_update_text2')}"
         , reply_markup=markup
     )
     bot.register_next_step_handler(message, lambda msg: submit_edit_plan(bot, msg, plan, new_name))
@@ -206,7 +206,7 @@ def submit_edit_plan(bot, message, plan, new_name):
     cid = message.chat.id
     try:
         new_price = float(message.text.strip()) if message.text.strip().lower() != "skip" else plan['price']
-
+        bot.send_message(cid, _("procesing"))
         data = {"name": new_name, "price": new_price}
         response = requests.put(f"{BASE_URL}/plans/{plan['id']}", json=data)
 
@@ -214,15 +214,15 @@ def submit_edit_plan(bot, message, plan, new_name):
             markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
             item1 = types.KeyboardButton(("/menu"))
             markup.row(item1)
-            bot.send_message(cid, "Plan updated successfully.", reply_markup=markup)
+            bot.send_message(cid, _('plans_success'), reply_markup=markup)
         else:
-            bot.send_message(cid, "Failed to update the plan. Please try again later.")
+            bot.send_message(cid, _('plans_fails'))
     except ValueError:
-        bot.send_message(cid, "Invalid price. Please enter a valid number.")
+        bot.send_message(cid, _('plans_input_price_no_empty'))
         bot.register_next_step_handler(message, lambda msg: submit_edit_plan(bot, msg, plan, new_name))
 
     # Return to the list of plans
-    list_plans_for_selection(bot, message, "edit")
+    list_plans(bot, message)
 
 
 # Handler for selecting a plan to delete
@@ -230,7 +230,7 @@ def handle_delete_plan_selection(bot, message, plans):
     cid = message.chat.id
     choice = message.text
 
-    if choice.strip().lower() == "cancel":
+    if choice.strip().lower() == _('general_cancel'):
         cancel_process(bot, message)
         return
 
@@ -242,10 +242,10 @@ def handle_delete_plan_selection(bot, message, plans):
         if selected_plan:
             confirm_delete_plan(bot, message, selected_plan)
         else:
-            bot.send_message(cid, "Invalid selection. Please try again.")
+            bot.send_message(cid, _('plans_invalid_selection'))
             list_plans_for_selection(bot, message, "delete")
     except ValueError:
-        bot.send_message(cid, "Invalid input. Please try again.")
+        bot.send_message(cid, _('plans_invalid_selection'))
         list_plans_for_selection(bot, message, "delete")
 
 
@@ -253,10 +253,10 @@ def handle_delete_plan_selection(bot, message, plans):
 def confirm_delete_plan(bot, message, selected_plan):
     cid = message.chat.id
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
-    markup.row(types.KeyboardButton("Yes"), types.KeyboardButton("Cancel"))
+    markup.row(types.KeyboardButton(_('payment_delete_yes')), types.KeyboardButton(_('general_cancel')))
 
     # Send the confirmation message
-    bot.send_message(cid, f"Are you sure you want to delete the plan '{selected_plan['name']}'?", reply_markup=markup)
+    bot.send_message(cid, f"{_('plans_delete_confirm')} '{selected_plan['name']}'?", reply_markup=markup)
 
     # Register the next step handler to capture the confirmation response
     bot.register_next_step_handler(message, lambda msg: handle_delete_plan_confirmation(bot, msg, selected_plan['id']))
@@ -265,31 +265,29 @@ def confirm_delete_plan(bot, message, selected_plan):
 # Handle delete confirmation and execute deletion
 def handle_delete_plan_confirmation(bot, message, plan_id):
     cid = message.chat.id
-
-    if message.text.strip().lower() == "yes":
+    print(message.text.strip().lower(), _('payment_delete_yes'))
+    if message.text == _('payment_delete_yes'):
         delete_plan(bot, message, plan_id)
     else:
-        bot.send_message(cid, "Plan deletion canceled.")
-        list_plans_for_selection(bot, message, "delete")
+        bot.send_message(cid, _('plans_canceled'))
 
 
 # Perform deletion
 def delete_plan(bot, message, plan_id):
     cid = message.chat.id
-    bot.send_message(cid, "Processing...")
-
+    bot.send_message(cid, _('procesing'))
     response = requests.delete(f"{BASE_URL}/plans/{plan_id}")
 
     if response.status_code == 200:
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
         item1 = types.KeyboardButton(("/menu"))
         markup.row(item1)
-        bot.send_message(cid, "Plan deleted successfully.", reply_markup=markup)
+        bot.send_message(cid, _('plans_delete_deleted'), reply_markup=markup)
     else:
-        bot.send_message(cid, "Failed to delete the plan. Please try again later.")
+        bot.send_message(cid, _('plans_fails'))
 
     # Return to the list of plans
-    list_plans_for_selection(bot, message, "delete")
+    list_plans(bot, message)
 
 
 def edit_plan_handler(bot, message):
