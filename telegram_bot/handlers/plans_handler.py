@@ -180,7 +180,7 @@ def handle_edit_plan_selection(bot, message, plans):
         if selected_plan:
             bot.send_message(
                 cid,
-                f"{translate('Actualizar nombre del plan:', target_lang)} '{selected_plan['name']}' {translate('o ingrese un nuevo nombre:', target_lang)}",
+                f"{translate('✏️ Actualizar nombre del plan:', target_lang)} '{selected_plan['name']}' {translate('o ingrese un nuevo nombre:', target_lang)}",
                 reply_markup=markup
             )
             bot.register_next_step_handler(message, lambda msg: handle_edit_plan_name(bot, msg, selected_plan))
@@ -211,7 +211,7 @@ def handle_edit_plan_name(bot, message, plan):
 
     bot.send_message(
         cid,
-        f"{translate('Actualizar precio del plan:', target_lang)} '{new_name}' {translate('o ingrese un nuevo precio:', target_lang)}",
+        f"{translate('✏️ Actualizar precio del plan:', target_lang)} '{new_name}' {translate('o ingrese un nuevo precio:', target_lang)}",
         reply_markup=markup
     )
     bot.register_next_step_handler(message, lambda msg: submit_edit_plan(bot, msg, plan, new_name))
@@ -234,7 +234,7 @@ def submit_edit_plan(bot, message, plan, new_name):
             markup.row(item1)
             bot.send_message(cid, translate("Plan actualizado con éxito.", target_lang), reply_markup=markup)
         else:
-            bot.send_message(cid, translate("Error al actualizar el plan.", target_lang))
+            bot.send_message(cid, translate("Error al ✏️ Actualizar el plan.", target_lang))
     except ValueError:
         bot.send_message(cid, translate("El precio del plan no puede estar vacío.", target_lang))
         bot.register_next_step_handler(message, lambda msg: submit_edit_plan(bot, msg, plan, new_name))

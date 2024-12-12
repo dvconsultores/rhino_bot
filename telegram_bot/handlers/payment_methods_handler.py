@@ -261,7 +261,7 @@ def edit_payment_method(bot, message, payment_method_id):
             markup.row(item1)
             bot.send_message(cid, translate("Método de pago actualizado con éxito.", target_lang), reply_markup=markup)
         else:
-            bot.send_message(cid, translate("Error al actualizar el método de pago.", target_lang))
+            bot.send_message(cid, translate("Error al ✏️ Actualizar el método de pago.", target_lang))
     else:
         bot.send_message(cid, translate("El nombre del método de pago no puede estar vacío.", target_lang))
     

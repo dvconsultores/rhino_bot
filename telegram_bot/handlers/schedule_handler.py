@@ -348,7 +348,7 @@ def handle_time_edit(bot, message, schedule):
         bot.send_message(cid, translate("Horario actualizado con éxito.", target_lang))
         list_schedules(bot, message)  # Optionally, show the updated list of schedules
     else:
-        bot.send_message(cid, translate("Error al actualizar el horario.", target_lang))
+        bot.send_message(cid, translate("Error al ✏️ Actualizar el horario.", target_lang))
 
 def handle_delete_schedule_selection(bot, message, schedules):
     """

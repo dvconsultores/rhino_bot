@@ -47,18 +47,17 @@ def command_start(message):
 def command_list(message):
     cid = message.chat.id
     target_lang = get_language_by_telegram_id(cid)  # Get the user's language preference
-    print(target_lang + " - " + str(cid))  # Debug statement
     help_text = translate("Aquí están los comandos disponibles:", target_lang)
 
     # Set up buttons with translated text
     buttons = [
-        [InlineKeyboardButton(translate("Registrar", target_lang), callback_data="create_user")],
-        [InlineKeyboardButton(translate("Planes", target_lang), callback_data="list_plans")],
-        [InlineKeyboardButton(translate("Ubicaciones", target_lang), callback_data="list_locations")],
-        [InlineKeyboardButton(translate("Horarios", target_lang), callback_data="list_schedules")],
-        [InlineKeyboardButton(translate("Pago", target_lang), callback_data="start_payment")],
-        [InlineKeyboardButton(translate("Administrador", target_lang), callback_data="listAdmin")],
-        [InlineKeyboardButton(translate("Idioma", target_lang), callback_data="edit_language")]
+        [InlineKeyboardButton(translate("🤖 Registrar - ✏️ Actualizar Datos", target_lang), callback_data="create_user")],
+        [InlineKeyboardButton(translate("📋 Ver Planes", target_lang), callback_data="list_plans")],
+        [InlineKeyboardButton(translate("📍 Ver Ubicaciones", target_lang), callback_data="list_locations")],
+        [InlineKeyboardButton(translate("📅 Ver Horarios", target_lang), callback_data="list_schedules")],
+        [InlineKeyboardButton(translate("💳 Registrar Pago", target_lang), callback_data="start_payment")],
+        [InlineKeyboardButton(translate("🛠️ Administrar", target_lang), callback_data="listAdmin")],
+        [InlineKeyboardButton(translate("🌐 Cambiar Idioma", target_lang), callback_data="edit_language")]
     ]
     reply_markup = InlineKeyboardMarkup(buttons)
     bot.send_message(cid, help_text, reply_markup=reply_markup)
@@ -123,11 +122,11 @@ def listAdmin(m):
     target_lang = get_language_by_telegram_id(cid)  # Get the user's language preference
     help_text = translate("Opciones de administrador", target_lang)
     # Define the buttons
-    button1 = InlineKeyboardButton(translate("Métodos de pago", target_lang), callback_data="payment_method_menu")
-    button2 = InlineKeyboardButton(translate("Planes", target_lang), callback_data="plans_menu")
-    button3 = InlineKeyboardButton(translate("Ubicaciones", target_lang), callback_data="locations_menu")
-    button4 = InlineKeyboardButton(translate("Horarios", target_lang), callback_data="schedule_menu")
-    button5 = InlineKeyboardButton(translate("Entrenadores", target_lang), callback_data="coaches_menu")
+    button1 = InlineKeyboardButton(translate("💳 Métodos de pago", target_lang), callback_data="payment_method_menu")
+    button2 = InlineKeyboardButton(translate("📋 Planes", target_lang), callback_data="plans_menu")
+    button3 = InlineKeyboardButton(translate("📍 Ubicaciones", target_lang), callback_data="locations_menu")
+    button4 = InlineKeyboardButton(translate("📅 Horarios", target_lang), callback_data="schedule_menu")
+    button5 = InlineKeyboardButton(translate("🏅 Entrenadores", target_lang), callback_data="coaches_menu")
 
     # Create a nested list of buttons
     buttons = [[button1], [button2], [button3], [button4], [button5]]
@@ -142,10 +141,10 @@ def payment_method_menu(m):
     target_lang = get_language_by_telegram_id(cid)  # Get the user's language preference
     help_text = translate("Opciones de administrador", target_lang) + ' - ' + translate("Métodos de pago", target_lang)
     # Define the buttons
-    button1 = InlineKeyboardButton(translate("Agregar", target_lang), callback_data="add_payment_method_handler")
-    button2 = InlineKeyboardButton(translate("Actualizar", target_lang), callback_data="edit_payment_method_handler")
-    button3 = InlineKeyboardButton(translate("Eliminar", target_lang), callback_data="delete_payment_method_handler")
-    button4 = InlineKeyboardButton(translate("Listar", target_lang), callback_data="show_payment_method_list")
+    button1 = InlineKeyboardButton(translate("➕ Crear", target_lang), callback_data="add_payment_method_handler")
+    button2 = InlineKeyboardButton(translate("✏️ Actualizar", target_lang), callback_data="edit_payment_method_handler")
+    button3 = InlineKeyboardButton(translate("🗑️ Eliminar", target_lang), callback_data="delete_payment_method_handler")
+    button4 = InlineKeyboardButton(translate("📋 Listar", target_lang), callback_data="show_payment_method_list")
 
     # Create a nested list of buttons
     buttons = [[button1], [button2], [button3], [button4]]
@@ -160,10 +159,10 @@ def payment_menu(m):
     target_lang = get_language_by_telegram_id(cid)  # Get the user's language preference
     help_text = translate("Opciones de administrador", target_lang) + ' - ' + translate("Métodos de pago", target_lang)
     # Define the buttons
-    button1 = InlineKeyboardButton(translate("Agregar", target_lang), callback_data="add_payment_method_handler")
-    button2 = InlineKeyboardButton(translate("Actualizar", target_lang), callback_data="edit_payment_method_handler")
-    button3 = InlineKeyboardButton(translate("Eliminar", target_lang), callback_data="delete_payment_method_handler")
-    button4 = InlineKeyboardButton(translate("Listar", target_lang), callback_data="show_payment_method_list")
+    button1 = InlineKeyboardButton(translate("➕ Crear", target_lang), callback_data="add_payment_method_handler")
+    button2 = InlineKeyboardButton(translate("✏️ Actualizar", target_lang), callback_data="edit_payment_method_handler")
+    button3 = InlineKeyboardButton(translate("🗑️ Eliminar", target_lang), callback_data="delete_payment_method_handler")
+    button4 = InlineKeyboardButton(translate("📋 Listar", target_lang), callback_data="show_payment_method_list")
 
     # Create a nested list of buttons
     buttons = [[button1], [button2], [button3], [button4]]
@@ -178,10 +177,10 @@ def locations_menu(m):
     target_lang = get_language_by_telegram_id(cid)  # Get the user's language preference
     help_text = translate("Opciones de administrador", target_lang) + ' - ' + translate("Ubicaciones", target_lang)
     # Define the buttons
-    button1 = InlineKeyboardButton(translate("Agregar", target_lang), callback_data="add_location_handler")
-    button2 = InlineKeyboardButton(translate("Actualizar", target_lang), callback_data="handle_edit_location")
-    button3 = InlineKeyboardButton(translate("Eliminar", target_lang), callback_data="handle_delete_location")
-    button4 = InlineKeyboardButton(translate("Listar", target_lang), callback_data="list_locations")
+    button1 = InlineKeyboardButton(translate("➕ Crear", target_lang), callback_data="add_location_handler")
+    button2 = InlineKeyboardButton(translate("✏️ Actualizar", target_lang), callback_data="handle_edit_location")
+    button3 = InlineKeyboardButton(translate("🗑️ Eliminar", target_lang), callback_data="handle_delete_location")
+    button4 = InlineKeyboardButton(translate("📋 Listar", target_lang), callback_data="list_locations")
 
     # Create a nested list of buttons
     buttons = [[button1], [button2], [button3], [button4]]
@@ -196,10 +195,10 @@ def coaches_menu(m):
     target_lang = get_language_by_telegram_id(cid)  # Get the user's language preference
     help_text = translate("Opciones de administrador", target_lang) + ' - ' + translate("Entrenadores", target_lang)
     # Define the buttons
-    button1 = InlineKeyboardButton(translate("Agregar", target_lang), callback_data="add_coach_handler")
-    button2 = InlineKeyboardButton(translate("Actualizar", target_lang), callback_data="edit_coach_handler")
-    button3 = InlineKeyboardButton(translate("Eliminar", target_lang), callback_data="delete_coach_handler")
-    button4 = InlineKeyboardButton(translate("Listar", target_lang), callback_data="list_coaches")
+    button1 = InlineKeyboardButton(translate("➕ Crear", target_lang), callback_data="add_coach_handler")
+    button2 = InlineKeyboardButton(translate("✏️ Actualizar", target_lang), callback_data="edit_coach_handler")
+    button3 = InlineKeyboardButton(translate("🗑️ Eliminar", target_lang), callback_data="delete_coach_handler")
+    button4 = InlineKeyboardButton(translate("📋 Listar", target_lang), callback_data="list_coaches")
 
     # Create a nested list of buttons
     buttons = [[button1], [button2], [button3], [button4]]
@@ -214,10 +213,10 @@ def plans_menu(m):
     target_lang = get_language_by_telegram_id(cid)  # Get the user's language preference
     help_text = translate("Opciones de administrador", target_lang) + ' - ' + translate("Planes", target_lang)
     # Define the buttons
-    button1 = InlineKeyboardButton(translate("Agregar", target_lang), callback_data="add_plan_handler")
-    button2 = InlineKeyboardButton(translate("Actualizar", target_lang), callback_data="edit_plan_handler")
-    button3 = InlineKeyboardButton(translate("Eliminar", target_lang), callback_data="delete_plan_handler")
-    button4 = InlineKeyboardButton(translate("Listar", target_lang), callback_data="list_plans")
+    button1 = InlineKeyboardButton(translate("➕ Crear", target_lang), callback_data="add_plan_handler")
+    button2 = InlineKeyboardButton(translate("✏️ Actualizar", target_lang), callback_data="edit_plan_handler")
+    button3 = InlineKeyboardButton(translate("🗑️ Eliminar", target_lang), callback_data="delete_plan_handler")
+    button4 = InlineKeyboardButton(translate("📋 Listar", target_lang), callback_data="list_plans")
 
     # Create a nested list of buttons
     buttons = [[button1], [button2], [button3], [button4]]
@@ -232,10 +231,10 @@ def schedule_menu(m):
     target_lang = get_language_by_telegram_id(cid)  # Get the user's language preference
     help_text = translate("Opciones de administrador", target_lang) + ' - ' + translate("Horarios", target_lang)
     # Define the buttons
-    button1 = InlineKeyboardButton(translate("Agregar", target_lang), callback_data="add_schedule_handler")
-    button2 = InlineKeyboardButton(translate("Actualizar", target_lang), callback_data="edit_schedule_handler")
-    button3 = InlineKeyboardButton(translate("Eliminar", target_lang), callback_data="delete_schedule_handler")
-    button4 = InlineKeyboardButton(translate("Listar", target_lang), callback_data="list_schedules")
+    button1 = InlineKeyboardButton(translate("➕ Crear", target_lang), callback_data="add_schedule_handler")
+    button2 = InlineKeyboardButton(translate("✏️ Actualizar", target_lang), callback_data="edit_schedule_handler")
+    button3 = InlineKeyboardButton(translate("🗑️ Eliminar", target_lang), callback_data="delete_schedule_handler")
+    button4 = InlineKeyboardButton(translate("📋 Listar", target_lang), callback_data="list_schedules")
 
     # Create a nested list of buttons
     buttons = [[button1], [button2], [button3], [button4]]

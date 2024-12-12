@@ -275,7 +275,7 @@ def submit_edited_location(bot, message, location_id, new_location_name):
         bot.send_message(cid, translate("Ubicación actualizada con éxito.", target_lang), reply_markup=markup)
         list_locations(bot, message)
     else:
-        bot.send_message(cid, translate("Error al actualizar la ubicación.", target_lang))
+        bot.send_message(cid, translate("Error al ✏️ Actualizar la ubicación.", target_lang))
 
 # Delete location handler
 def handle_delete_location_selection(bot, message, locations):

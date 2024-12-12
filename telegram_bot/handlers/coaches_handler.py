@@ -230,7 +230,7 @@ def handle_location_edit(bot, message, coach):
     if response.status_code == 200:
         bot.send_message(cid, translate("¡Entrenador actualizado con éxito!", target_lang))
     else:
-        bot.send_message(cid, translate("Error al actualizar el entrenador. Por favor, inténtelo de nuevo.", target_lang))
+        bot.send_message(cid, translate("Error al ✏️ Actualizar el entrenador. Por favor, inténtelo de nuevo.", target_lang))
 
 def handle_delete_coach_selection(bot, message, coaches):
     """Handle the selection of a coach to delete."""
