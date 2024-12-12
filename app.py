@@ -29,7 +29,6 @@ for bp in all_blueprints:
 def run_flask_app_debug():
     app.run(debug=True)    
 
-
 if __name__ == '__main__':
     run_flask_app_debug()
 

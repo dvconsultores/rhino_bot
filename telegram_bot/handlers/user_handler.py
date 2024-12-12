@@ -1,21 +1,34 @@
+import os
 import requests
 import telebot
 from telebot import types
-from telebot.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from dotenv import load_dotenv
-import os
+from deep_translator import GoogleTranslator
 import re
 from datetime import datetime
+# Load environment variables
+load_dotenv()
 
 # Telegram Bot setup
 API_TOKEN = os.getenv("API_TOKEN")
 bot = telebot.TeleBot(API_TOKEN)
 
-# Load environment variables
-load_dotenv()
-
 # Base API URL
 BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:5000")
+
+def translate(text, target_lang='es'):
+    """Translate text to the target language using GoogleTranslator."""
+    if target_lang == 'es':
+        return text
+    return GoogleTranslator(source='auto', target=target_lang).translate(text)
+
+
+def get_language_by_telegram_id(cid):
+    """Fetch the user's language preference via an API request."""
+    response = requests.get(f"{BASE_URL}/languages/{cid}")
+    if response.status_code == 200:
+        return response.json().get('language', 'es')
+    return 'es'
 
 # Helper function to validate date format
 def validate_date(date_text):
@@ -33,129 +46,149 @@ def validate_email(email):
 def get_user(bot, message):
     """Retrieve user information by ID."""
     cid = message.chat.id
-    msg = bot.send_message(cid, _("get_user_id"))
+    target_lang = get_language_by_telegram_id(cid)
+    msg = bot.send_message(cid, translate("Por favor, ingrese el ID del usuario:", target_lang))
     bot.register_next_step_handler(msg, fetch_user_info, bot=bot)
 
 def fetch_user_info(message, bot):
+    cid = message.chat.id
+    target_lang = get_language_by_telegram_id(cid)
     user_id = message.text
     try:
         response = requests.get(f"{BASE_URL}/users/{user_id}")
         if response.status_code == 200:
             user_data = response.json()
             user_info = "\n".join([f"{key}: {value}" for key, value in user_data.items()])
-            bot.send_message(message.chat.id, f"User Info:\n{user_info}")
+            bot.send_message(message.chat.id, translate(f"Información del usuario:\n{user_info}", target_lang))
         else:
-            bot.send_message(message.chat.id, "User not found.")
+            bot.send_message(message.chat.id, translate("Usuario no encontrado.", target_lang))
     except Exception as e:
-        bot.send_message(message.chat.id, f"An error occurred: {str(e)}")
+        bot.send_message(message.chat.id, translate(f"Ocurrió un error: {str(e)}", target_lang))
 
 # Dictionary to store user data temporarily
 user_data = {}
 
-def create_cancel_markup():
+def create_cancel_markup(target_lang='es'):
     """Create a reply markup with a 'Cancel' button."""
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
-    item1 = types.KeyboardButton(_("general_cancel"))
+    item1 = types.KeyboardButton(translate("Cancelar", target_lang))
     markup.row(item1)
     return markup
 
 def cancel_process(bot, message):
     """Handle the cancellation of the process."""
     cid = message.chat.id
+    target_lang = get_language_by_telegram_id(cid)
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
-    item1 = types.KeyboardButton(("/menu"))
+    item1 = types.KeyboardButton("/menu")
     markup.row(item1)
-    bot.send_message(cid, _("process_canceled"), reply_markup=markup)
+    bot.send_message(cid, translate("Proceso cancelado.", target_lang), reply_markup=markup)
     user_data.pop(cid, None)  # Clear user data after cancellation
 
-# Simplified create_user function to only take message
 def create_user(bot, message):
-    """Start user creation by asking for the user's name."""
-    user_data[message.chat.id] = {}
-    markup = create_cancel_markup()
-    msg = bot.send_message(message.chat.id, _("create_user_name"), reply_markup=markup)
+    """Iniciar la creación de usuario solicitando el nombre del usuario."""
+    cid = message.chat.id
+    target_lang = get_language_by_telegram_id(cid)
+    user_data[cid] = {}
+    markup = create_cancel_markup(target_lang)
+    msg = bot.send_message(cid, translate("Por favor, ingrese su nombre:", target_lang), reply_markup=markup)
     bot.register_next_step_handler(msg, process_name, bot=bot)
 
-
 def process_name(message, bot):
-    """Process the user's name and ask for cancel."""
-    if message.text.strip().lower() == _("general_cancel").lower():
+    """Procesar el nombre del usuario y preguntar por la cancelación."""
+    cid = message.chat.id
+    target_lang = get_language_by_telegram_id(cid)
+    
+    if message.text.strip().lower() == translate("Cancelar", target_lang).lower():
         cancel_process(bot, message)
         return
 
-    """Process the user's name and ask for the last name."""
+    """Procesar el nombre del usuario y preguntar por el apellido."""
     if not message.text.strip():
-        markup = create_cancel_markup()
-        msg = bot.send_message(message.chat.id, _("create_user_name_required"), reply_markup=markup)
+        markup = create_cancel_markup(target_lang)
+        msg = bot.send_message(message.chat.id, translate("El nombre es obligatorio. Por favor, ingrese su nombre:", target_lang), reply_markup=markup)
         bot.register_next_step_handler(msg, process_name, bot=bot)
         return
     
     user_data[message.chat.id]["name"] = message.text.strip()
-    msg = bot.send_message(message.chat.id, _("create_user_last_name"))
+    msg = bot.send_message(message.chat.id, translate("Por favor, ingrese su apellido:", target_lang))
     bot.register_next_step_handler(msg, process_lastname, bot=bot)
 
 def process_lastname(message, bot):
-    """Process the user's name and ask for cancel."""
-    if message.text.strip().lower() == _("general_cancel").lower():
+    """Procesar el apellido del usuario y preguntar por la cancelación."""
+    cid = message.chat.id
+    target_lang = get_language_by_telegram_id(cid)
+    
+    if message.text.strip().lower() == translate("Cancelar", target_lang).lower():
         cancel_process(bot, message)
         return
 
-    """Process the last name and ask for the cedula."""
+    """Procesar el apellido del usuario y preguntar por la cédula."""
     if not message.text.strip():
-        markup = create_cancel_markup()
-        msg = bot.send_message(message.chat.id, _("create_user_last_name_required"), reply_markup=markup)
+        markup = create_cancel_markup(target_lang)
+        msg = bot.send_message(message.chat.id, translate("El apellido es obligatorio. Por favor, ingrese su apellido:", target_lang), reply_markup=markup)
         bot.register_next_step_handler(msg, process_lastname, bot=bot)
         return
     
     user_data[message.chat.id]["lastname"] = message.text.strip()
-    msg = bot.send_message(message.chat.id, _("create_user_cedula"))
+    msg = bot.send_message(message.chat.id, translate("Por favor, ingrese su cédula:", target_lang))
     bot.register_next_step_handler(msg, process_cedula, bot=bot)
 
 def process_cedula(message, bot):
-    """Process the user's name and ask for cancel."""
-    if message.text.strip().lower() == _("general_cancel").lower():
+    """Procesar la cédula del usuario y preguntar por la cancelación."""
+    cid = message.chat.id
+    target_lang = get_language_by_telegram_id(cid)
+    
+    if message.text.strip().lower() == translate("Cancelar", target_lang).lower():
         cancel_process(bot, message)
         return
 
-    """Process the cedula and ask for the email."""
+    """Procesar la cédula y preguntar por el correo electrónico."""
     cedula_input = message.text.strip()
 
     # Check if cedula is empty or not an integer
     if not cedula_input or not cedula_input.isdigit():
-        markup = create_cancel_markup()
-        msg = bot.send_message(message.chat.id, _("create_user_cedula_format"), reply_markup=markup)
+        markup = create_cancel_markup(target_lang)
+        msg = bot.send_message(message.chat.id, translate("Formato de cédula incorrecto. Por favor, ingrese solo números.", target_lang), reply_markup=markup)
         bot.register_next_step_handler(msg, process_cedula, bot=bot)
         return
 
     # Store the valid cedula as an integer
     user_data[message.chat.id]["cedula"] = int(cedula_input)
-    msg = bot.send_message(message.chat.id, _("create_user_email"))
+    msg = bot.send_message(message.chat.id, translate("Por favor, ingrese su correo electrónico:", target_lang))
     bot.register_next_step_handler(msg, process_email, bot=bot)
 
 def process_email(message, bot):
-    """Process the user's name and ask for cancel."""
-    if message.text.strip().lower() == _("general_cancel").lower():
+    """Procesar el correo electrónico del usuario y preguntar por la cancelación."""
+    cid = message.chat.id
+    target_lang = get_language_by_telegram_id(cid)
+    
+    if message.text.strip().lower() == translate("Cancelar", target_lang).lower():
         cancel_process(bot, message)
         return
 
-    """Process the email and validate its format, then ask for the date of birth."""
-    if not validate_email(message.text.lower()):
-        markup = create_cancel_markup()
-        msg = bot.send_message(message.chat.id, _("create_user_email_required"), reply_markup=markup)
+    """Procesar el correo electrónico y validar su formato, luego preguntar por la fecha de nacimiento."""
+    email_input = message.text.lower()
+    if not validate_email(email_input):
+        markup = create_cancel_markup(target_lang)
+        msg = bot.send_message(message.chat.id, translate("Correo electrónico inválido. Por favor, ingrese un correo electrónico válido.", target_lang), reply_markup=markup)
         bot.register_next_step_handler(msg, process_email, bot=bot)
         return
     
-    user_data[message.chat.id]["email"] = message.text.lower()
-    msg = bot.send_message(message.chat.id, _("create_user_date_of_birth"))
+    user_data[message.chat.id]["email"] = email_input
+    msg = bot.send_message(message.chat.id, translate("Por favor, ingrese su fecha de nacimiento (DD/MM/AAAA):", target_lang))
     bot.register_next_step_handler(msg, process_date_of_birth, bot=bot)
 
 def process_date_of_birth(message, bot):
-    """Process the user's name and ask for cancel."""
-    if message.text.strip().lower() == _("general_cancel").lower():
+    """Procesar la fecha de nacimiento del usuario y preguntar por la cancelación."""
+    cid = message.chat.id
+    target_lang = get_language_by_telegram_id(cid)
+    
+    if message.text.strip().lower() == translate("Cancelar", target_lang).lower():
         cancel_process(bot, message)
         return
 
-    """Process the date of birth, validate it, and then ask for the phone number."""
+    """Procesar la fecha de nacimiento, validarla y luego preguntar por el número de teléfono."""
     date_input = message.text.strip()
 
     # Validate and reformat date
@@ -164,28 +197,33 @@ def process_date_of_birth(message, bot):
         formatted_date = datetime.strptime(date_input, "%d/%m/%Y").strftime("%Y-%m-%d")
     except ValueError:
         # If the date is invalid, ask again
-        msg = bot.send_message(message.chat.id, _("create_user_date_of_birth_required"))
+        markup = create_cancel_markup(target_lang)
+        msg = bot.send_message(message.chat.id, translate("Formato de fecha incorrecto. Por favor, ingrese la fecha en el formato DD/MM/AAAA.", target_lang), reply_markup=markup)
         bot.register_next_step_handler(msg, process_date_of_birth, bot=bot)
         return
     
     # Save the correctly formatted date to user_data
     user_data[message.chat.id]["date_of_birth"] = formatted_date
-    markup = create_cancel_markup()
-    msg = bot.send_message(message.chat.id, _("create_user_phone_number"), reply_markup=markup)
+    markup = create_cancel_markup(target_lang)
+    msg = bot.send_message(message.chat.id, translate("Por favor, ingrese su número de teléfono:", target_lang), reply_markup=markup)
     bot.register_next_step_handler(msg, process_phone, bot=bot)
 
 def process_phone(message, bot):
-    """Process the user's name and ask for cancel."""
-    if message.text.strip().lower() == _("general_cancel").lower():
+    """Procesar el número de teléfono del usuario y preguntar por la cancelación."""
+    cid = message.chat.id
+    target_lang = get_language_by_telegram_id(cid)
+    
+    if message.text.strip().lower() == translate("Cancelar", target_lang).lower():
         cancel_process(bot, message)
         return
         
-    """Process the phone number and then ask for the Instagram handle."""
+    """Procesar el número de teléfono y luego preguntar por el handle de Instagram."""
     phone_input = message.text.strip()
 
     # Check if the phone number is empty or not an integer
     if not phone_input or not phone_input.isdigit():
-        msg = bot.send_message(message.chat.id, _("create_user_phone_number_required"))
+        markup = create_cancel_markup(target_lang)
+        msg = bot.send_message(message.chat.id, translate("Número de teléfono inválido. Por favor, ingrese solo números.", target_lang), reply_markup=markup)
         bot.register_next_step_handler(msg, process_phone, bot=bot)
         return
 
@@ -194,102 +232,92 @@ def process_phone(message, bot):
 
     # Create markup with a 'Skip' button for the next step
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-    item1 = types.KeyboardButton('Skip')
+    item1 = types.KeyboardButton(translate('Omitir', target_lang))
     markup.row(item1)
-    markup.row(types.KeyboardButton(_("general_cancel")))
-    msg = bot.send_message(message.chat.id, _("create_user_ig"), parse_mode='Markdown', reply_markup=markup)         
+    markup.row(types.KeyboardButton(translate("Cancelar", target_lang)))
+    msg = bot.send_message(message.chat.id, translate("Por favor, ingrese su handle de Instagram (o 'Omitir'):", target_lang), parse_mode='Markdown', reply_markup=markup)         
     bot.register_next_step_handler(msg, process_instagram, bot=bot)
 
-
-# Function to handle Instagram input and show confirmation
 def process_instagram(message, bot):
-    """Process the user's name and ask for cancel."""
-    if message.text.strip().lower() == _("general_cancel").lower():
+    """Procesar el handle de Instagram del usuario y preguntar por la cancelación."""
+    cid = message.chat.id
+    target_lang = get_language_by_telegram_id(cid)
+    
+    if message.text.strip().lower() == translate("Cancelar", target_lang).lower():
         cancel_process(bot, message)
         return
 
-    """Process the Instagram handle and then confirm user details before creation."""
-    user_data[message.chat.id]["instagram"] = message.text if message.text.lower() != "skip" else None
+    """Procesar el handle de Instagram y luego confirmar los detalles del usuario antes de la creación."""
+    user_data[message.chat.id]["instagram"] = message.text if message.text.lower() != translate("Omitir", target_lang).lower() else None
 
     # Set default values for type, status, and telegram_id
     user_data[message.chat.id]["type"] = "cliente"
     user_data[message.chat.id]["estatus"] = "activo"
     user_data[message.chat.id]["telegram_id"] = message.chat.id
 
-   # Titles dictionary to map data keys to personalized titles
+    # Titles dictionary to map data keys to personalized titles
     titles = {
-        "name": _("create_user_title_name"),
-        "lastname": _("create_user_title_last_name"),
-        "cedula": _("create_user_title_cedula"),
-        "email": _("create_user_title_email"),
-        "date_of_birth": _("create_user_title_date_of_birth"),
-        "phone": _("create_user_title_phone"),
-        "instagram": _("create_user_title_ig"),
-        "type": _("create_user_title_type"),
-        "status": _("create_user_title_status"),
-        "telegram_id": _("create_user_title_telegram_id")
+        "name": translate("Nombre", target_lang),
+        "lastname": translate("Apellido", target_lang),
+        "cedula": translate("Cédula", target_lang),
+        "email": translate("Correo electrónico", target_lang),
+        "date_of_birth": translate("Fecha de nacimiento", target_lang),
+        "phone": translate("Número de teléfono", target_lang),
+        "instagram": translate("Instagram", target_lang),
+        "type": translate("Tipo", target_lang),
+        "estatus": translate("Estatus", target_lang),
+        "telegram_id": translate("ID de Telegram", target_lang)
     }
 
     # Display collected data for confirmation with personalized titles, limited to 7 fields
     user_info = "\n".join([f"{titles.get(key, key)}: {value}" 
                         for key, value in list(user_data[message.chat.id].items())[:7] if value])
-    confirmation_text = _("create_user_confirm") + "\n" + user_info
-
+    confirmation_text = translate("Por favor, confirme la información del usuario:", target_lang) + "\n" + user_info
 
     # Show confirmation options with Yes, No, and Cancel buttons
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-    item1 = types.KeyboardButton(_("general_yes"))
-    item2 = types.KeyboardButton(_("general_no"))
-    item3 = types.KeyboardButton(_("general_cancel"))
+    item1 = types.KeyboardButton(translate("Sí", target_lang))
+    item2 = types.KeyboardButton(translate("No", target_lang))
+    item3 = types.KeyboardButton(translate("Cancelar", target_lang))
     markup.row(item1)
     markup.row(item2)
     markup.row(item3)
     msg = bot.send_message(message.chat.id, confirmation_text, reply_markup=markup)
-    bot.register_next_step_handler(msg, lambda msg: confirmation_handler(msg, bot))  # Provide `message` and `bot`
+    bot.register_next_step_handler(msg, lambda msg: confirmation_handler(msg, bot))
 
-# Confirmation Handler for Payment
 def confirmation_handler(message, bot):
     """Handle the user's confirmation choice."""
     cid = message.chat.id
+    target_lang = get_language_by_telegram_id(cid)
     
     # Remove the reply keyboard
     markup_remove = types.ReplyKeyboardRemove()
     
-    if message.text == _("general_yes"):
-        # Proceed with payment submission
-        submit_payment(cid, bot, markup_remove)
-        bot.send_message(cid, _("procesing"))
-    elif message.text == _("general_no"):
-        # Restart payment process
-        bot.send_message(cid, _("create_user_restart"), reply_markup=markup_remove)
-        start_payment(bot, message)  # Restart the payment process
+    if message.text.strip().lower() == translate("Sí", target_lang).lower():
+        # Proceed with user creation
+        bot.send_message(cid, translate("Procesando...", target_lang))
+        # Here you can add code to save the user data to the database
+        bot.send_message(cid, translate("Usuario creado con éxito.", target_lang), reply_markup=markup_remove)
+    elif message.text.strip().lower() == translate("No", target_lang).lower():
+        # Restart user creation process
+        bot.send_message(cid, translate("Reiniciando el proceso de creación de usuario.", target_lang), reply_markup=markup_remove)
+        create_user(bot, message)
+    elif message.text.strip().lower() == translate("Cancelar", target_lang).lower():
+        # Cancel user creation
+        cancel_process(bot, message)
 
-    elif message.text == _("general_cancel"):
-        # Cancel payment registration
-        bot.send_message(cid, _("payment_cancel"), reply_markup=markup_remove)
-        payment_data.pop(cid, None)  # Clear payment data after cancellation
+def process_payment(bot, message):
+    """Procesar el pago."""
+    cid = message.chat.id
+    target_lang = get_language_by_telegram_id(cid)
+    payment_payload = payment_data.get(cid)
 
-
-# Submit payment to the API
-def submit_payment(cid, bot, markup_remove):
-    data = payment_data[cid]
-    payment_payload = {
-        'user_id': data['user_id'],
-        'date': datetime.now().strftime('%Y-%m-%d'),
-        'amount': data['amount'],
-        'reference': data['reference'],
-        'payment_method_id': data['payment_method_id'],
-        'year': datetime.now().year,
-        'month': datetime.now().month
-    }
-
-    # Make API call to submit the payment data
     response = requests.post(f"{BASE_URL}/payments", json=payment_payload)
     
     if response.status_code == 201:
-        bot.send_message(cid, _("payment_success"), reply_markup=markup_remove)
+        bot.send_message(cid, translate("Pago realizado con éxito.", target_lang), reply_markup=markup_remove)
     else:
-        bot.send_message(cid, f"{_('payment_fail')} Error: {response.status_code}", reply_markup=markup_remove)
+        bot.send_message(cid, f"{translate('Error en el pago.', target_lang)} Error: {response.status_code}", reply_markup=markup_remove)
 
     # Clear stored data
     payment_data.pop(cid, None)

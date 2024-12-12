@@ -15,12 +15,31 @@ def create_language(data):
     return new_language
 
 def update_language(id_telegram, data):
+    """
+    Update the language of a user identified by `id_telegram`.
+    
+    :param id_telegram: The Telegram ID of the user.
+    :param data: A dictionary containing the fields to update.
+    :return: The updated Language object or None if not found.
+    """
+    # Find the language entry by Telegram ID
     language = Language.query.filter_by(id_telegram=id_telegram).first()
     if language:
+        # Ensure the key 'language' in the input maps to 'Language' in the model
         for key, value in data.items():
-            setattr(language, key, value)
+            if key.lower() == 'language' and hasattr(language, 'Language'):
+                setattr(language, 'Language', value)
+            else:
+                print(f"Key '{key}' is not recognized or does not exist in the Language model.")
+        
+        # Commit changes to the database
         db.session.commit()
+        print("Updated Language:", language.to_dict())
+    else:
+        print(f"No language found with id_telegram: {id_telegram}")
+
     return language
+
 
 def delete_language(id_telegram):
     language = Language.query.filter_by(id_telegram=id_telegram).first()
