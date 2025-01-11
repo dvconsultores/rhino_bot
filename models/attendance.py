@@ -9,7 +9,7 @@ class Attendance(db.Model):
     coach_id = db.Column(db.Integer, db.ForeignKey('coach.id'), nullable=False)
     location_id = db.Column(db.Integer, db.ForeignKey('locations.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
+    date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     creation_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     # Relationships

@@ -1,4 +1,5 @@
 import os
+from enum import Enum
 from dotenv import load_dotenv
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -10,17 +11,49 @@ from handlers.plans_handler import add_plan_handler, list_plans_for_selection, d
 from handlers.locations_handler import list_locations, add_location_handler, handle_edit_location, handle_delete_location, list_locations_customer
 from handlers.schedule_handler import add_schedule_handler, delete_schedule_handler, edit_schedule_handler, list_schedules, list_schedules_customer
 from handlers.coaches_handler import add_coach_handler, delete_coach_handler, edit_coach_handler, list_coaches
-from handlers.attendance_handler import add_attendance_handler, list_coaches_for_attendance, handle_coach_selection, handle_user_id_input, list_locations_for_attendance
+from handlers.attendance_handler import add_attendance_handler, list_coaches_for_attendance, handle_coach_selection, list_locations_for_attendance
 from deep_translator import GoogleTranslator
 import requests
 # Load .env file
 load_dotenv()
+
+# Ensure the reports directory exists
+if not os.path.exists('reports'):
+    os.makedirs('reports')
+
+def generate_user_report():
+    """Fetch user data from the API and generate an Excel report."""
+    response = requests.get("http://127.0.0.1:5000/users")
+    if response.status_code == 200:
+        users = response.json()
+        df = pd.DataFrame(users)
+        file_path = os.path.join('reports', 'user_report.xlsx')
+        df.to_excel(file_path, index=False)
+        return file_path
+    else:
+        print("Failed to fetch user data")
+        return None    
 
 # Telegram Bot setup
 API_TOKEN = os.getenv("API_TOKEN")
 bot = telebot.TeleBot(API_TOKEN)
 # Base API URL
 BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:5000")
+
+class UserType(Enum):
+    coach = "coach"
+    administrativo = "administrativo"
+    cliente = "cliente"
+    owner = "owner"
+
+def get_user_type(cid):
+    """Fetch the user's type via an API request or database query."""
+    # This is a placeholder function. Replace it with the actual implementation.
+    response = requests.get(f"{BASE_URL}/users/{cid}")
+    if response.status_code == 200:
+        return UserType(response.json().get('type'))
+    return UserType.cliente  # Default to 'cliente' if not found
+
 
 def translate(text, target_lang='es'):
     """Translate text to the target language using GoogleTranslator."""
@@ -45,24 +78,58 @@ def command_start(message):
     command_list(message)
 
 @bot.message_handler(commands=['menu'])
+@bot.message_handler(commands=['menu'])
 def command_list(message):
     cid = message.chat.id
     target_lang = get_language_by_telegram_id(cid)  # Get the user's language preference
+    user_type = get_user_type(cid)  # Get the user's type
     help_text = translate("Aquí están los comandos disponibles:", target_lang)
 
-    # Set up buttons with translated text
-    buttons = [
-        [InlineKeyboardButton(translate("🤖 Registrar - ✏️ Actualizar Datos", target_lang), callback_data="create_user")],
-        [InlineKeyboardButton(translate("📋 Ver Planes", target_lang), callback_data="list_plans_customer")],
-        [InlineKeyboardButton(translate("📍 Ver Ubicaciones", target_lang), callback_data="list_locations_customer")],
-        [InlineKeyboardButton(translate("📅 Ver Horarios", target_lang), callback_data="list_schedules_customer")],
-        [InlineKeyboardButton(translate("💳 Registrar Pago", target_lang), callback_data="start_payment")],
-        [InlineKeyboardButton(translate("🏅 Coachs", target_lang), callback_data="add_attendance_handler")],
-        [InlineKeyboardButton(translate("🛠️ Administrar", target_lang), callback_data="listAdmin")],
-        [InlineKeyboardButton(translate("🌐 Cambiar Idioma", target_lang), callback_data="edit_language")]
-    ]
+    # Set up buttons based on user type
+    if user_type == UserType.coach:
+        buttons = [
+            [InlineKeyboardButton(translate("🤖 Registrar - ✏️ Actualizar Datos", target_lang), callback_data="create_user")],
+            [InlineKeyboardButton(translate("📋 Ver Planes", target_lang), callback_data="list_plans_customer")],
+            [InlineKeyboardButton(translate("📍 Ver Ubicaciones", target_lang), callback_data="list_locations_customer")],
+            [InlineKeyboardButton(translate("📅 Ver Horarios", target_lang), callback_data="list_schedules_customer")],
+            [InlineKeyboardButton(translate("💳 Registrar Pago", target_lang), callback_data="start_payment")],
+            [InlineKeyboardButton(translate("🏅 Coachs", target_lang), callback_data="add_attendance_handler")],
+            [InlineKeyboardButton(translate("🌐 Cambiar Idioma", target_lang), callback_data="edit_language")]
+        ]
+    elif user_type == UserType.administrativo:
+        buttons = [
+            [InlineKeyboardButton(translate("🤖 Registrar - ✏️ Actualizar Datos", target_lang), callback_data="create_user")],
+            [InlineKeyboardButton(translate("📋 Ver Planes", target_lang), callback_data="list_plans_customer")],
+            [InlineKeyboardButton(translate("📍 Ver Ubicaciones", target_lang), callback_data="list_locations_customer")],
+            [InlineKeyboardButton(translate("📅 Ver Horarios", target_lang), callback_data="list_schedules_customer")],
+            [InlineKeyboardButton(translate("💳 Registrar Pago", target_lang), callback_data="start_payment")],
+            [InlineKeyboardButton(translate("🛠️ Administrar", target_lang), callback_data="listAdmin")],
+            [InlineKeyboardButton(translate("🌐 Cambiar Idioma", target_lang), callback_data="edit_language")]
+        ]
+    elif user_type == UserType.cliente:
+        buttons = [
+            [InlineKeyboardButton(translate("🤖 Registrar - ✏️ Actualizar Datos", target_lang), callback_data="create_user")],
+            [InlineKeyboardButton(translate("📋 Ver Planes", target_lang), callback_data="list_plans_customer")],
+            [InlineKeyboardButton(translate("📍 Ver Ubicaciones", target_lang), callback_data="list_locations_customer")],
+            [InlineKeyboardButton(translate("📅 Ver Horarios", target_lang), callback_data="list_schedules_customer")],
+            [InlineKeyboardButton(translate("💳 Registrar Pago", target_lang), callback_data="start_payment")],
+            [InlineKeyboardButton(translate("🌐 Cambiar Idioma", target_lang), callback_data="edit_language")]
+        ]
+    elif user_type == UserType.owner:
+        buttons = [
+            [InlineKeyboardButton(translate("🤖 Registrar - ✏️ Actualizar Datos", target_lang), callback_data="create_user")],
+            [InlineKeyboardButton(translate("📋 Ver Planes", target_lang), callback_data="list_plans_customer")],
+            [InlineKeyboardButton(translate("📍 Ver Ubicaciones", target_lang), callback_data="list_locations_customer")],
+            [InlineKeyboardButton(translate("📅 Ver Horarios", target_lang), callback_data="list_schedules_customer")],
+            [InlineKeyboardButton(translate("💳 Registrar Pago", target_lang), callback_data="start_payment")],
+            [InlineKeyboardButton(translate("🏅 Coachs", target_lang), callback_data="add_attendance_handler")],
+            [InlineKeyboardButton(translate("🛠️ Administrar", target_lang), callback_data="listAdmin")],
+            [InlineKeyboardButton(translate("🌐 Cambiar Idioma", target_lang), callback_data="edit_language")]
+        ]
+
     reply_markup = InlineKeyboardMarkup(buttons)
     bot.send_message(cid, help_text, reply_markup=reply_markup)
+
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_handler(call):
@@ -117,10 +184,13 @@ def callback_handler(call):
 
         # Attendance options
         'add_attendance_handler': lambda msg: add_attendance_handler(bot, msg),
+
+        # Reports
+        'reporte_clientes': send_user_report,
     }
     func = options.get(call.data)
     if func:
-        print(f"Calling function for {call.data}")  # Debug statement
+        # print(f"Calling function for {call.data}")  # Debug statement
         func(call.message)
     else:
         print(f"No function found for {call.data}")  # Debug statement
@@ -135,14 +205,28 @@ def listAdmin(m):
     button3 = InlineKeyboardButton(translate("📍 Ubicaciones", target_lang), callback_data="locations_menu")
     button4 = InlineKeyboardButton(translate("📅 Horarios", target_lang), callback_data="schedule_menu")
     button5 = InlineKeyboardButton(translate("🏅 Entrenadores", target_lang), callback_data="coaches_menu")
+    button6 = InlineKeyboardButton(translate("📊 Reporte Clientes", target_lang), callback_data="reporte_clientes")
+    button7 = InlineKeyboardButton(translate("📊 Reporte Pagos", target_lang), callback_data="coaches_menu")
+    button8 = InlineKeyboardButton(translate("📊 Reporte Coachs", target_lang), callback_data="coaches_menu")
 
     # Create a nested list of buttons
-    buttons = [[button1], [button2], [button3], [button4], [button5]]
+    buttons = [[button1], [button2], [button3], [button4], [button5], [button6], [button7], [button8]]
     buttons[1].sort(key=lambda btn: btn.text)
 
     # Create the keyboard markup
     reply_markup = InlineKeyboardMarkup(buttons)    
     bot.send_message(cid, help_text, reply_markup=reply_markup) 
+
+@bot.callback_query_handler(func=lambda call: call.data == "reporte_clientes")
+def send_user_report(call):
+    """Handle the button click to generate and send the user report."""
+    cid = call.message.chat.id
+    file_path = generate_user_report()
+    if file_path:
+        with open(file_path, 'rb') as file:
+            bot.send_document(cid, file)
+    else:
+        bot.send_message(cid, "Error generating the report.")
 
 def payment_method_menu(m):
     cid = m.chat.id

@@ -1,3 +1,5 @@
+from datetime import datetime
+import pytz
 from models.attendance import Attendance
 from models.coaches import Coach
 from models.locations import Locations
@@ -19,22 +21,20 @@ class AttendanceService:
             coach_id = data.get('coach_id')
             location_id = data.get('location_id')
             user_id = data.get('user_id')
-            date = data.get('date')
+            date_str = data.get('date')  # Expected format: 'YYYY-MM-DD HH:MM'
 
-            # Ensure related entities exist
-            if not Coach.query.get(coach_id):
-                return {"error": "Coach not found"}, 404
-            if not Location.query.get(location_id):
-                return {"error": "Location not found"}, 404
-            if not User.query.get(user_id):
-                return {"error": "User not found"}, 404
+            # Convert date to datetime object with UTC-4 timezone
+            # local_tz = pytz.timezone('America/Caracas')  # UTC-4 timezone
+            # naive_date = datetime.strptime(date_str, '%Y-%m-%d %H:%M')
+            # local_date = local_tz.localize(naive_date)
+            # utc_date = local_date.astimezone(pytz.utc)
 
-            # Create a new Attendance record
+            # Create new attendance record
             new_attendance = Attendance(
                 coach_id=coach_id,
                 location_id=location_id,
                 user_id=user_id,
-                date=date
+                date=date_str
             )
             db.session.add(new_attendance)
             db.session.commit()

@@ -37,21 +37,23 @@ attendance_bp = Blueprint('attendance', __name__)
                     'coach_id': {'type': 'integer'},
                     'location_id': {'type': 'integer'},
                     'user_id': {'type': 'integer'},
-                    'date': {'type': 'string', 'format': 'date'}
+                    'date': {'type': 'string', 'format': 'date'},
+                    'creation_date': {'type': 'string', 'format': 'date-time'}
                 }
             }
         },
-        400: {'description': 'Invalid input'},
-        500: {'description': 'Server error'}
+        400: {
+            'description': 'Error creating attendance'
+        }
     }
 })
 def create_attendance():
-    """Create a new attendance record."""
     data = request.get_json()
     result = AttendanceService.create_attendance(data)
-    if isinstance(result, tuple):
-        return jsonify(result[0]), result[1]
-    return jsonify(result.to_dict()), 201
+    if result:
+        return jsonify(result.to_dict()), 201
+    else:
+        return jsonify({"error": "Error creating attendance"}), 400
 
 
 @attendance_bp.route('/attendances/<int:attendance_id>', methods=['GET'])

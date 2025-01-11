@@ -89,8 +89,12 @@ def get_users():
     }
 })
 def get_user(user_id):
-    user = get_user_by_id(user_id)
-    return jsonify(user.to_dict()) if user else ('', 404)
+    user = get_user_by_telegram_id(user_id)
+    if user:
+        return jsonify(user.to_dict())
+    else:
+        print(f"User with ID {user_id} not found")  # Debug statement
+        return ('', 404)
 
 
 @user_bp.route('/users/telegram/<int:telegram_id>', methods=['GET'])

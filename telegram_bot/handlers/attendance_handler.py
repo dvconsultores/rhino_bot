@@ -1,9 +1,11 @@
 import os
 import requests
 import telebot
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from telebot import types
 from dotenv import load_dotenv
 from deep_translator import GoogleTranslator
+from datetime import datetime
 
 # Load environment variables
 load_dotenv()
@@ -28,14 +30,23 @@ def get_language_by_telegram_id(cid):
     if response.status_code == 200:
         return response.json().get('language', 'es')
     return 'es'
-    
+
+
+def cancel_process(bot, message):
+    """Handle the cancellation of the process."""
+    cid = message.chat.id
+    target_lang = get_language_by_telegram_id(cid)
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+    markup.add(types.KeyboardButton("/menu"))
+    bot.send_message(cid, translate("Proceso cancelado.", target_lang), reply_markup=markup)
+
+
 def add_attendance_handler(bot, message):
     """Start the process of adding an attendance record with coach, location, user, and date."""
     cid = message.chat.id
     target_lang = get_language_by_telegram_id(cid)
-    bot.send_message(cid, translate("Por favor, seleccione un entrenador:", target_lang))
+    bot.send_message(cid, translate("Registro diario de coach:", target_lang))
     list_coaches_for_attendance(bot, message)
-
 
 def list_coaches_for_attendance(bot, message):
     """List all available coaches for attendance."""
@@ -62,7 +73,7 @@ def list_coaches_for_attendance(bot, message):
 
 
 def handle_coach_selection(bot, message, coaches):
-    """Handle the selection of a coach and ask for the user ID."""
+    """Handle the selection of a coach and proceed to user selection."""
     cid = message.chat.id
     target_lang = get_language_by_telegram_id(cid)
 
@@ -77,26 +88,63 @@ def handle_coach_selection(bot, message, coaches):
         bot.register_next_step_handler(message, lambda msg: list_coaches_for_attendance(bot, msg))
         return
 
-    bot.send_message(cid, translate("Por favor, ingrese el ID del usuario (cliente):", target_lang))
-    bot.register_next_step_handler(message, lambda msg: handle_user_id_input(bot, msg, selected_coach['id']))
+    bot.send_message(cid, translate("Por favor, seleccione un usuario (cliente):", target_lang))
+    list_users_for_attendance(bot, message, selected_coach['id'])
 
 
-def handle_user_id_input(bot, message, coach_id):
-    """Handle the input for the user ID and ask for the location."""
+def list_users_for_attendance(bot, message, coach_id):
+    """List all available users for attendance."""
     cid = message.chat.id
     target_lang = get_language_by_telegram_id(cid)
+    response = requests.get(f"{BASE_URL}/users")  # Assuming the endpoint to fetch users
+
+    if response.status_code == 200:
+        users = response.json()
+
+        if users:
+            users_text = translate("Elija un usuario:\n", target_lang)
+            markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+            for user in users:
+                markup.add(types.KeyboardButton(f"{user['cedula']}: {user['name']} {user['lastname']}"))
+            markup.add(types.KeyboardButton(translate("Cancelar", target_lang)))
+            bot.send_message(cid, users_text, reply_markup=markup)
+            bot.register_next_step_handler(message, lambda msg: handle_user_selection(bot, msg, coach_id, users))
+        else:
+            bot.send_message(cid, translate("No hay usuarios disponibles.", target_lang))
+    else:
+        bot.send_message(cid, translate("Error al obtener los usuarios.", target_lang))
+
+
+def handle_user_selection(bot, message, coach_id, users):
+    """Handle the selection of a user and proceed to location selection."""
+    cid = message.chat.id
+    target_lang = get_language_by_telegram_id(cid)
+
     if message.text.strip().lower() == translate("Cancelar", target_lang).lower():
         cancel_process(bot, message)
         return
 
-    user_id = message.text.strip()
-    if not user_id.isdigit():
-        bot.send_message(cid, translate("ID del usuario inválido. Por favor, ingrese un número válido:", target_lang))
-        bot.register_next_step_handler(message, lambda msg: handle_user_id_input(bot, msg, coach_id))
+    # Extract the input text and split it by ":"
+    user_input = message.text.strip()
+    try:
+        input_cedula = user_input.split(":")[0].strip()
+    except IndexError:
+        bot.send_message(cid, translate("Entrada inválida. Por favor, seleccione un usuario válido con el formato proporcionado.", target_lang))
+        bot.register_next_step_handler(message, lambda msg: list_users_for_attendance(bot, msg, coach_id))
         return
 
+    # Validate both the cedula and the full string
+    selected_user = next((user for user in users if str(user['cedula']) == input_cedula and f"{user['cedula']}: {user['name']} {user['lastname']}" == user_input), None)
+
+    if not selected_user:
+        bot.send_message(cid, translate("Usuario inválido. Por favor, seleccione un usuario válido.", target_lang))
+        bot.register_next_step_handler(message, lambda msg: list_users_for_attendance(bot, msg, coach_id))
+        return
+
+    # Proceed to location selection
     bot.send_message(cid, translate("Por favor, seleccione una ubicación:", target_lang))
-    bot.register_next_step_handler(message, lambda msg: list_locations_for_attendance(bot, msg, coach_id, int(user_id)))
+    list_locations_for_attendance(bot, message, coach_id, selected_user['id'])
+
 
 
 def list_locations_for_attendance(bot, message, coach_id, user_id):
@@ -112,7 +160,8 @@ def list_locations_for_attendance(bot, message, coach_id, user_id):
             locations_text = translate("Elija una ubicación:\n", target_lang)
             markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
             for location in locations:
-                markup.add(types.KeyboardButton(location['location']))
+                # Show location ID and name for better validation
+                markup.add(types.KeyboardButton(f"{location['id']}: {location['location']}"))
             markup.add(types.KeyboardButton(translate("Cancelar", target_lang)))
             bot.send_message(cid, locations_text, reply_markup=markup)
             bot.register_next_step_handler(message, lambda msg: handle_location_selection(bot, msg, coach_id, user_id, locations))
@@ -131,44 +180,42 @@ def handle_location_selection(bot, message, coach_id, user_id, locations):
         cancel_process(bot, message)
         return
 
-    selected_location = next((loc for loc in locations if loc['location'] == message.text.strip()), None)
+    # Extract location ID from user input
+    user_input = message.text.strip()
+    try:
+        input_location_id = user_input.split(":")[0].strip()
+    except IndexError:
+        bot.send_message(cid, translate("Entrada inválida. Por favor, seleccione una ubicación válida.", target_lang))
+        bot.register_next_step_handler(message, lambda msg: list_locations_for_attendance(bot, msg, coach_id, user_id))
+        return
+
+    # Validate both the location ID and full string
+    selected_location = next((loc for loc in locations if str(loc['id']) == input_location_id and f"{loc['id']}: {loc['location']}" == user_input), None)
 
     if not selected_location:
         bot.send_message(cid, translate("Ubicación inválida. Por favor, seleccione una ubicación válida.", target_lang))
         bot.register_next_step_handler(message, lambda msg: list_locations_for_attendance(bot, msg, coach_id, user_id))
         return
 
-    bot.send_message(cid, translate("Por favor, ingrese la fecha (formato YYYY-MM-DD):", target_lang))
-    bot.register_next_step_handler(message, lambda msg: handle_date_input(bot, msg, coach_id, user_id, selected_location))
-
-
-def handle_date_input(bot, message, coach_id, user_id, location):
-    """Handle the input for the date and submit the data."""
-    cid = message.chat.id
-    target_lang = get_language_by_telegram_id(cid)
-
-    if message.text.strip().lower() == translate("Cancelar", target_lang).lower():
-        cancel_process(bot, message)
-        return
-
-    date = message.text.strip()
-    try:
-        datetime.strptime(date, '%Y-%m-%d')
-    except ValueError:
-        bot.send_message(cid, translate("Fecha inválida. Por favor, ingrese una fecha en el formato YYYY-MM-DD:", target_lang))
-        bot.register_next_step_handler(message, lambda msg: handle_date_input(bot, msg, coach_id, user_id, location))
-        return
+    # Automatically set the date to today's date
+    date = datetime.utcnow().strftime('%Y-%m-%d %H:%M')
 
     # Submit the data to the backend
     data = {
         'coach_id': coach_id,
         'user_id': user_id,
-        'location_id': location['id'],
+        'location_id': selected_location['id'],
         'date': date
     }
     response = requests.post(f"{BASE_URL}/attendances", json=data)
 
     if response.status_code == 201:
-        bot.send_message(cid, translate("¡Asistencia registrada con éxito!", target_lang))
+        # Set up buttons with translated text
+        buttons = [
+            [InlineKeyboardButton(translate("🏅 Nuevo registro", target_lang), callback_data="add_attendance_handler")],
+        ]
+        reply_markup = InlineKeyboardMarkup(buttons)
+        bot.send_message(cid, translate("¡Asistencia registrada con éxito!", target_lang), reply_markup=reply_markup)
     else:
         bot.send_message(cid, translate("Error al registrar la asistencia. Por favor, inténtelo de nuevo.", target_lang))
+
