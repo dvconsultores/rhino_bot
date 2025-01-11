@@ -1,11 +1,11 @@
 import os
-import time
 from flask import Flask
 from flask_migrate import Migrate
 from flasgger import Swagger
 from dotenv import load_dotenv
 from db import db  # Import db from db.py
 
+# Load environment variables from .env file
 load_dotenv()
 
 app = Flask(__name__)
@@ -24,14 +24,12 @@ from controllers import all_blueprints
 for bp in all_blueprints:
     app.register_blueprint(bp)
 
-
 # Function to run flask in debug mode
 def run_flask_app_debug():
-    app.run(debug=True)    
+    app.run(debug=True)
 
 if __name__ == '__main__':
     run_flask_app_debug()
-
 
 # export FLASK_APP=app.py
 # flask db init

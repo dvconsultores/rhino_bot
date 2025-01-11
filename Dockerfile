@@ -1,26 +1,20 @@
-# Use a base image
-FROM python:3.11-slim
+# Use the provided base image
+FROM andresdom2004/rhino_box:latest
 
-# Set the working directory
+# Set the working directory in the container
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy your project code
-COPY . /app
-
-# Install dependencies (Flask and others from your project)
+# Copy the requirements file first (for caching purposes)
 COPY requirements.txt /app/requirements.txt
+
+# Install Python dependencies
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
-# Install Gunicorn (only for Docker setup)
-RUN pip install gunicorn
+# Copy the rest of the application files into the container
+COPY . /app
 
-# Expose the port for Flask
+# Expose the Flask app port
 EXPOSE 5000
 
-# Default command to run Flask in production
+# Default command to run the Flask application using Gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
