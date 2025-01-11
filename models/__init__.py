@@ -6,6 +6,8 @@ from .payment import Payment
 from .location_users import LocationUsers
 from .plans import Plans
 from .language import Language
+from .coaches import Coach
+from .attendance import Attendance
 
 # Add all models to this list if needed
-all_models = [User, Schedule, Locations, PaymentMethods, Payment, LocationUsers, Plans, Language]
+all_models = [User, Schedule, Locations, PaymentMethods, Payment, LocationUsers, Plans, Language, Coach, Attendance]

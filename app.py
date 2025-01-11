@@ -38,5 +38,3 @@ if __name__ == '__main__':
 # flask db migrate -m "Initial migration."
 # flask db upgrade    
 # install msgfmt in Dockerfile
-# compile translations
-# ./language.sh

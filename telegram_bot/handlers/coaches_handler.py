@@ -51,7 +51,7 @@ def add_coach_handler(bot, message):
     target_lang = get_language_by_telegram_id(cid)
     markup = create_cancel_markup(target_lang)
     bot.send_message(message.chat.id, translate("Por favor, ingrese la cédula del entrenador:", target_lang), reply_markup=markup)
-    bot.register_next_step_handler(message, handle_cedula_input)
+    bot.register_next_step_handler(message, lambda msg: handle_cedula_input(bot, msg))
 
 def handle_cedula_input(bot, message):
     """Handle the input of the coach's cedula and ask for the names."""
@@ -74,10 +74,24 @@ def handle_names_input(bot, message, cedula):
         return
 
     names = message.text.strip()
-    bot.send_message(message.chat.id, translate("Por favor, ingrese el ID de la ubicación para el entrenador:", target_lang))
-    bot.register_next_step_handler(message, lambda msg: submit_new_coach(bot, msg, cedula, names))
 
-def submit_new_coach(bot, message, cedula, names):
+    response = requests.get(f"{BASE_URL}/locations")
+    if response.status_code == 200:
+        locations = response.json()    
+
+        if locations:
+                markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+                for location in locations:
+                    markup.add(types.KeyboardButton(location['location']))
+                markup.add(types.KeyboardButton(translate("Cancelar", target_lang)))
+                bot.send_message(cid, translate("Seleccione una ubicación:", target_lang), reply_markup=markup)
+                bot.register_next_step_handler(message, lambda msg: submit_new_coach(bot, msg, cedula, names, locations))
+        else:
+                bot.send_message(cid, translate("No hay ubicaciones disponibles.", target_lang))
+    else:
+        bot.send_message(cid, translate("Error al obtener las ubicaciones.", target_lang))        
+
+def submit_new_coach(bot, message, cedula, names, locations):
     """Submit the new coach to the backend."""
     cid = message.chat.id
     target_lang = get_language_by_telegram_id(cid)
@@ -85,13 +99,13 @@ def submit_new_coach(bot, message, cedula, names):
         cancel_process(bot, message)
         return
 
-    location_id = message.text.strip()
-
-    if not location_id.isdigit():
-        bot.send_message(message.chat.id, translate("ID de ubicación inválido. Por favor, ingrese un número válido.", target_lang))
-        bot.register_next_step_handler(message, lambda msg: submit_new_coach(bot, msg, cedula, names))
+    selected_location = next((loc for loc in locations if loc['location'] == message.text.strip()), None)
+    if not selected_location:
+        bot.send_message(cid, translate("Ubicación inválida. Intente de nuevo.", target_lang))
+        list_locations(bot, message, cedula, names)
         return
-
+   
+    location_id = selected_location['id']
     data = {"cedula": cedula, "names": names, "location_id": int(location_id)}
     response = requests.post(f"{BASE_URL}/coaches", json=data)
     bot.send_message(cid, translate("Procesando...", target_lang))
@@ -114,7 +128,7 @@ def list_coaches(bot, message):
             # Build a text representation of the coaches
             coaches_text = translate("Entrenadores disponibles:", target_lang) + "\n"
             for coach in coaches:
-                coaches_text += f"🔹 ID: {coach['id']} - Cédula: {coach['cedula']} - Nombres: {coach['names']} - Ubicación: {coach['location_name']}\n"
+                coaches_text += f"🔹 ID: {coach['id']}  Cédula: {coach['cedula']}  Nombres: {coach['names']}  Ubicación: {coach['location_name']}\n"
 
             # Send the list of coaches to the user
             markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
@@ -167,11 +181,15 @@ def handle_edit_coach_selection(bot, message, coaches):
         coach_id = int(choice.split(":")[0].strip())
         selected_coach = next((coach for coach in coaches if coach['id'] == coach_id), None)
 
+        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+        markup.add(translate("Omitir", target_lang))
+        markup.add(translate("Cancelar", target_lang))
+
         if selected_coach:
             bot.send_message(
                 cid,
                 f"{translate('Nombres actuales:', target_lang)} {selected_coach['names']}. {translate('Por favor, proporcione nuevos nombres o elija Omitir:', target_lang)}",
-                reply_markup=create_cancel_markup(target_lang)
+                reply_markup=markup
             )
             bot.register_next_step_handler(message, lambda msg: handle_names_edit(bot, msg, selected_coach))
         else:
@@ -196,10 +214,14 @@ def handle_names_edit(bot, message, coach):
 
     coach['names'] = new_names
 
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+    markup.add(translate("Omitir", target_lang))
+    markup.add(translate("Cancelar", target_lang))
+
     bot.send_message(
         cid,
-        f"{translate('ID de ubicación actual:', target_lang)} {coach['location_id']}. {translate('Por favor, proporcione un nuevo ID de ubicación o elija Omitir:', target_lang)}",
-        reply_markup=create_cancel_markup(target_lang)
+        f"{translate('Ubicación actual:', target_lang)} {coach['location_name']}. {translate('Por favor, proporcione la nueva ubicación o elija Omitir:', target_lang)}",
+        reply_markup=markup
     )
     bot.register_next_step_handler(message, lambda msg: handle_location_edit(bot, msg, coach))
 
@@ -282,8 +304,8 @@ def execute_delete_coach(bot, message, coach_id):
 
     list_coaches(bot, message)
 
-def edit_coach_handler(message):
+def edit_coach_handler(bot, message):
     list_coaches_for_selection(bot, message, "edit")
 
-def delete_coach_handler(message):
+def delete_coach_handler(bot, message):
     list_coaches_for_selection(bot, message, "delete")

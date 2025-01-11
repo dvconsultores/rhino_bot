@@ -71,6 +71,32 @@ def list_plans(bot, message):
     else:
         bot.send_message(cid, translate("Error al obtener los planes.", target_lang))
 
+def list_plans_customer(bot, message):
+    """
+    Fetch and display the list of all available plans.
+    """
+    cid = message.chat.id
+    target_lang = get_language_by_telegram_id(cid)
+    response = requests.get(f"{BASE_URL}/plans")
+
+    if response.status_code == 200:
+        plans = response.json()
+
+        if plans:
+            # Build a text representation of the plans
+            plans_text = translate("Planes disponibles:", target_lang) + "\n\n"
+            for plan in plans:
+                plans_text += f"🔹 *{plan['name']} \n *{translate('Precio:', target_lang)}*: ${plan['price']}\n\n"
+
+            # Send the list of plans to the user
+            markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+            markup.add(types.KeyboardButton("/menu"))
+            bot.send_message(cid, plans_text, parse_mode="Markdown", reply_markup=markup)
+        else:
+            bot.send_message(cid, translate("No hay planes disponibles.", target_lang))
+    else:
+        bot.send_message(cid, translate("Error al obtener los planes.", target_lang))        
+
 def add_plan_handler(bot, message):
     """
     Start the process of adding a new plan.

@@ -92,6 +92,35 @@ def list_locations(bot, message):
     else:
         bot.send_message(cid, escape_markdown(translate("Error al obtener las ubicaciones.", target_lang)), parse_mode="MarkdownV2")
 
+def list_locations_customer(bot, message):
+    """
+    Fetch and display the list of all available locations.
+    """
+    cid = message.chat.id
+    target_lang = get_language_by_telegram_id(cid)
+    response = requests.get(f"{BASE_URL}/locations")
+
+    if response.status_code == 200:
+        locations = response.json()
+
+        if locations:
+            # Build a text representation of the locations
+            locations_text = f"{escape_markdown(translate('Ubicaciones disponibles:', target_lang))}\n\n"
+            for loc in locations:
+                locations_text += (
+                    f"*{escape_markdown(loc['location'])} \n"
+                    f"*{escape_markdown(translate('Dirección:', target_lang))}* \n{escape_markdown(loc['address'])}\n\n"
+                )
+
+            # Send the list of locations to the user
+            markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+            markup.add(types.KeyboardButton("/menu"))
+            bot.send_message(cid, locations_text, parse_mode="MarkdownV2", reply_markup=markup)
+        else:
+            bot.send_message(cid, escape_markdown(translate("No hay ubicaciones disponibles.", target_lang)), parse_mode="MarkdownV2")
+    else:
+        bot.send_message(cid, escape_markdown(translate("Error al obtener las ubicaciones.", target_lang)), parse_mode="MarkdownV2")        
+
 # Add a new location
 def add_location_handler(bot, message):
     """

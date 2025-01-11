@@ -1,4 +1,5 @@
 from models.coaches import Coach
+from sqlalchemy.orm import joinedload
 from db import db
 
 class CoachesService:
@@ -11,9 +12,11 @@ class CoachesService:
         return new_coach
 
     @staticmethod
-    def get_coach_by_id(coach_id):
-        """Retrieve a coach by ID."""
-        return Coach.query.get(coach_id)
+    def get_coach_by_id(coach_id, eager_load=False):
+        query = db.session.query(Coach)
+        if eager_load:
+            query = query.options(joinedload(Coach.location))  # Eagerly load `location`
+        return query.filter(Coach.id == coach_id).first()
 
     @staticmethod
     def get_all_coaches():

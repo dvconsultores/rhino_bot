@@ -167,8 +167,25 @@ def update_coach(coach_id):
     }
 })
 def delete_coach(coach_id):
-    deleted_coach = CoachesService.delete_coach(coach_id)
-    if deleted_coach:
-        return jsonify(deleted_coach.to_dict())
-    else:
+    from sqlalchemy.orm import joinedload  # Import for eager loading
+
+    # Fetch the coach with joined loading for related attributes
+    coach_to_delete = CoachesService.get_coach_by_id(coach_id, eager_load=True)
+
+    if not coach_to_delete:
         return jsonify({'error': 'Coach not found'}), 404
+
+    # Call the service to delete the coach
+    deleted_coach = CoachesService.delete_coach(coach_id)
+
+    if deleted_coach:
+        # Ensure the `location` is included in the response dictionary
+        deleted_coach_dict = {
+            'id': deleted_coach.id,
+            'name': deleted_coach.names,
+            'cedula': deleted_coach.cedula,
+            'location_name': deleted_coach.location.location if deleted_coach.location else None
+        }
+        return jsonify(deleted_coach_dict)
+
+    return jsonify({'error': 'Coach not found'}), 404

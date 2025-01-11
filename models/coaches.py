@@ -17,7 +17,7 @@ class Coach(db.Model):
             'cedula': self.cedula,
             'names': self.names,
             'location_id': self.location_id,
-            'location_name': self.location.name if self.location else None,
+            'location_name': self.location.location if self.location else None,
             'creation_date': self.creation_date.isoformat()
         }
 

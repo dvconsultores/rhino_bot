@@ -93,6 +93,32 @@ def list_schedules(bot, message):
     else:
         bot.send_message(cid, translate("Error al obtener los horarios.", target_lang))
 
+def list_schedules_customer(bot, message):
+    """
+    Fetch and display the list of all available schedules.
+    """
+    cid = message.chat.id
+    target_lang = get_language_by_telegram_id(cid)
+    response = requests.get(f"{BASE_URL}/schedules")
+
+    if response.status_code == 200:
+        schedules = response.json()
+
+        if schedules:
+            # Build a text representation of the schedules
+            schedules_text = f"{translate('Horarios disponibles:', target_lang)}\n\n"
+            for sch in schedules:
+                schedules_text += f"🔹 *{translate('Ubicación:', target_lang)}*\n\n{sch['location_name']}\n*{translate('Días:', target_lang)}* {sch['days']}\n*{translate('Hora de inicio:', target_lang)}*\n{sch['time_init']}\n\n\n"
+
+            # Send the list of schedules to the user
+            markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+            markup.add(types.KeyboardButton("/menu"))
+            bot.send_message(cid, schedules_text, parse_mode="MarkdownV2", reply_markup=markup)
+        else:
+            bot.send_message(cid, translate("No hay horarios disponibles.", target_lang))
+    else:
+        bot.send_message(cid, translate("Error al obtener los horarios.", target_lang))        
+
 def list_locations(bot, message):
     """
     List all available locations for the user to select.

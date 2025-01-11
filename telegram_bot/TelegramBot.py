@@ -6,10 +6,11 @@ from handlers.language_handler import edit_language
 from handlers.user_handler import get_user, create_user
 from handlers.payment_handler import start_payment
 from handlers.payment_methods_handler import show_payment_method_list, list_payment_methods_for_selection, add_payment_method_handler, delete_payment_method_handler, edit_payment_method_handler 
-from handlers.plans_handler import add_plan_handler, list_plans_for_selection, delete_plan_handler, edit_plan_handler, list_plans
-from handlers.locations_handler import list_locations, add_location_handler, handle_edit_location, handle_delete_location
-from handlers.schedule_handler import add_schedule_handler, delete_schedule_handler, edit_schedule_handler, list_schedules
+from handlers.plans_handler import add_plan_handler, list_plans_for_selection, delete_plan_handler, edit_plan_handler, list_plans, list_plans_customer
+from handlers.locations_handler import list_locations, add_location_handler, handle_edit_location, handle_delete_location, list_locations_customer
+from handlers.schedule_handler import add_schedule_handler, delete_schedule_handler, edit_schedule_handler, list_schedules, list_schedules_customer
 from handlers.coaches_handler import add_coach_handler, delete_coach_handler, edit_coach_handler, list_coaches
+from handlers.attendance_handler import add_attendance_handler, list_coaches_for_attendance, handle_coach_selection, handle_user_id_input, list_locations_for_attendance
 from deep_translator import GoogleTranslator
 import requests
 # Load .env file
@@ -52,10 +53,11 @@ def command_list(message):
     # Set up buttons with translated text
     buttons = [
         [InlineKeyboardButton(translate("🤖 Registrar - ✏️ Actualizar Datos", target_lang), callback_data="create_user")],
-        [InlineKeyboardButton(translate("📋 Ver Planes", target_lang), callback_data="list_plans")],
-        [InlineKeyboardButton(translate("📍 Ver Ubicaciones", target_lang), callback_data="list_locations")],
-        [InlineKeyboardButton(translate("📅 Ver Horarios", target_lang), callback_data="list_schedules")],
+        [InlineKeyboardButton(translate("📋 Ver Planes", target_lang), callback_data="list_plans_customer")],
+        [InlineKeyboardButton(translate("📍 Ver Ubicaciones", target_lang), callback_data="list_locations_customer")],
+        [InlineKeyboardButton(translate("📅 Ver Horarios", target_lang), callback_data="list_schedules_customer")],
         [InlineKeyboardButton(translate("💳 Registrar Pago", target_lang), callback_data="start_payment")],
+        [InlineKeyboardButton(translate("🏅 Coachs", target_lang), callback_data="add_attendance_handler")],
         [InlineKeyboardButton(translate("🛠️ Administrar", target_lang), callback_data="listAdmin")],
         [InlineKeyboardButton(translate("🌐 Cambiar Idioma", target_lang), callback_data="edit_language")]
     ]
@@ -91,9 +93,11 @@ def callback_handler(call):
         'delete_plan_handler': lambda msg: delete_plan_handler(bot, msg),
         'edit_plan_handler': lambda msg: edit_plan_handler(bot, msg),
         'list_plans': lambda msg: list_plans(bot, msg),
+        'list_plans_customer': lambda msg: list_plans_customer(bot, msg),
 
         # Locations options
         'list_locations': lambda msg: list_locations(bot, msg),
+        'list_locations_customer': lambda msg: list_locations_customer(bot, msg),
         'add_location_handler': lambda msg: add_location_handler(bot, msg),
         'handle_edit_location': lambda msg: handle_edit_location(bot, msg),
         'handle_delete_location': lambda msg: handle_delete_location(bot, msg),
@@ -103,12 +107,16 @@ def callback_handler(call):
         'delete_schedule_handler': lambda msg: delete_schedule_handler(bot, msg),
         'edit_schedule_handler': lambda msg: edit_schedule_handler(bot, msg),
         'list_schedules': lambda msg: list_schedules(bot, msg),
+        'list_schedules_customer': lambda msg: list_schedules_customer(bot, msg),
 
         # Coaches options
         'add_coach_handler': lambda msg: add_coach_handler(bot, msg),
         'delete_coach_handler': lambda msg: delete_coach_handler(bot, msg),
         'edit_coach_handler': lambda msg: edit_coach_handler(bot, msg),
-        'list_coaches': lambda msg: list_coaches(bot, msg)
+        'list_coaches': lambda msg: list_coaches(bot, msg),
+
+        # Attendance options
+        'add_attendance_handler': lambda msg: add_attendance_handler(bot, msg),
     }
     func = options.get(call.data)
     if func:
