@@ -1,29 +1,20 @@
-# Use an official Python runtime as a parent image
-FROM python:3.11-slim
+# Use the provided base image
+FROM andresdom2004/rhino_box:latest
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy the requirements file into the container
+# Copy the requirements file first (for caching purposes)
 COPY requirements.txt /app/requirements.txt
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
-# Copy the current directory contents into the container at /app
+# Copy the rest of the application files into the container
 COPY . /app
 
-# Expose the port the app runs on
+# Expose the Flask app port
 EXPOSE 5000
 
-# Define environment variable
-ENV FLASK_APP=app.py
-
-# Run the bot and the Flask application using Gunicorn
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:5000 app:app & python3 forever.py"]
+# Default command (can be overridden in docker-compose.yml)
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:5000 app:app"]
