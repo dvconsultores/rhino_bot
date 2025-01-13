@@ -83,7 +83,7 @@ def get_users():
                 }
             }
         },
-        404: {
+        '204': {
             'description': 'User not found'
         }
     }

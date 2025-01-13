@@ -14,19 +14,19 @@ from handlers.coaches_handler import add_coach_handler, delete_coach_handler, ed
 from handlers.attendance_handler import add_attendance_handler, list_coaches_for_attendance, handle_coach_selection, list_locations_for_attendance
 from deep_translator import GoogleTranslator
 import requests
-import redis
+#import redis
 # Load .env file
 load_dotenv()
 
 # Initialize Redis client
-redis_host = os.getenv('REDIS_HOST', 'localhost')
-redis_port = os.getenv('REDIS_PORT', 6380)
-try:
-    redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=0)
-    redis_client.ping()  # Check if the connection is successful
-except redis.ConnectionError as e:
-    print(f"Redis connection error: {e}")
-    redis_client = None
+# redis_host = os.getenv('REDIS_HOST', 'localhost')
+# redis_port = os.getenv('REDIS_PORT', 6380)
+# try:
+#     redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=0)
+#     redis_client.ping()  # Check if the connection is successful
+# except redis.ConnectionError as e:
+#     print(f"Redis connection error: {e}")
+#     redis_client = None
 
 # Ensure the reports directory exists
 if not os.path.exists('reports'):
@@ -73,19 +73,19 @@ def translate(text, target_lang='es'):
     return GoogleTranslator(source='auto', target=target_lang).translate(text)
 
 def get_language_by_telegram_id(cid):
-    """Fetch the user's language preference via an API request."""
-    # Check Redis for the language preference
-    language = redis_client.get(f"language:{cid}")
-    if language:
-        return language
+    # """Fetch the user's language preference via an API request."""
+    # # Check Redis for the language preference
+    # language = redis_client.get(f"language:{cid}")
+    # if language:
+    #     return language
 
-    # If not found in Redis, fetch from API
-    response = requests.get(f"{BASE_URL}/languages/{cid}")
-    if response.status_code == 200:
-        language = response.json().get('Language', 'es')
-        # Store the language preference in Redis
-        redis_client.set(f"language:{cid}", language)
-        return language
+    # # If not found in Redis, fetch from API
+    # response = requests.get(f"{BASE_URL}/languages/{cid}")
+    # if response.status_code == 200:
+    #     language = response.json().get('Language', 'es')
+    #     # Store the language preference in Redis
+    #     redis_client.set(f"language:{cid}", language)
+    #     return language
 
     return 'es'
 
@@ -115,7 +115,7 @@ def command_list(message):
             [InlineKeyboardButton(translate("📅 Ver Horarios", target_lang), callback_data="list_schedules_customer")],
             [InlineKeyboardButton(translate("💳 Registrar Pago", target_lang), callback_data="start_payment")],
             [InlineKeyboardButton(translate("🏅 Coachs", target_lang), callback_data="add_attendance_handler")],
-            [InlineKeyboardButton(translate("🌐 Cambiar Idioma", target_lang), callback_data="edit_language")]
+            # [InlineKeyboardButton(translate("🌐 Cambiar Idioma", target_lang), callback_data="edit_language")]
         ]
     elif user_type == UserType.administrativo:
         buttons = [
@@ -125,7 +125,7 @@ def command_list(message):
             [InlineKeyboardButton(translate("📅 Ver Horarios", target_lang), callback_data="list_schedules_customer")],
             [InlineKeyboardButton(translate("💳 Registrar Pago", target_lang), callback_data="start_payment")],
             [InlineKeyboardButton(translate("🛠️ Administrar", target_lang), callback_data="listAdmin")],
-            [InlineKeyboardButton(translate("🌐 Cambiar Idioma", target_lang), callback_data="edit_language")]
+            # [InlineKeyboardButton(translate("🌐 Cambiar Idioma", target_lang), callback_data="edit_language")]
         ]
     elif user_type == UserType.cliente:
         buttons = [
@@ -134,7 +134,7 @@ def command_list(message):
             [InlineKeyboardButton(translate("📍 Ver Ubicaciones", target_lang), callback_data="list_locations_customer")],
             [InlineKeyboardButton(translate("📅 Ver Horarios", target_lang), callback_data="list_schedules_customer")],
             [InlineKeyboardButton(translate("💳 Registrar Pago", target_lang), callback_data="start_payment")],
-            [InlineKeyboardButton(translate("🌐 Cambiar Idioma", target_lang), callback_data="edit_language")]
+            # [InlineKeyboardButton(translate("🌐 Cambiar Idioma", target_lang), callback_data="edit_language")]
         ]
     elif user_type == UserType.owner:
         buttons = [
@@ -145,7 +145,7 @@ def command_list(message):
             [InlineKeyboardButton(translate("💳 Registrar Pago", target_lang), callback_data="start_payment")],
             [InlineKeyboardButton(translate("🏅 Coachs", target_lang), callback_data="add_attendance_handler")],
             [InlineKeyboardButton(translate("🛠️ Administrar", target_lang), callback_data="listAdmin")],
-            [InlineKeyboardButton(translate("🌐 Cambiar Idioma", target_lang), callback_data="edit_language")]
+            # [InlineKeyboardButton(translate("🌐 Cambiar Idioma", target_lang), callback_data="edit_language")]
         ]
 
     reply_markup = InlineKeyboardMarkup(buttons)

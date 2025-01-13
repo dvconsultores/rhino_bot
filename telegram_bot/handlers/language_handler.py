@@ -8,21 +8,21 @@ from deep_translator import GoogleTranslator
 from telebot import types
 from telebot.types import Message
 import requests
-import redis
+# import redis
 
 # Load environment variables
 load_dotenv()
 
 # Initialize Redis client
-redis_host = os.getenv('REDIS_HOST', 'localhost')
-redis_port = os.getenv('REDIS_PORT', 6380)
+# redis_host = os.getenv('REDIS_HOST', 'localhost')
+# redis_port = os.getenv('REDIS_PORT', 6380)
 
-try:
-    redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=0)
-    redis_client.ping()  # Check if the connection is successful
-except redis.ConnectionError as e:
-    print(f"Redis connection error: {e}")
-    redis_client = None
+# try:
+#     redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=0)
+#     redis_client.ping()  # Check if the connection is successful
+# except redis.ConnectionError as e:
+#     print(f"Redis connection error: {e}")
+#     redis_client = None
 
 # Base API URL
 BASE_URL = os.getenv("API_BASE_URL", "http://web:5000")
@@ -36,10 +36,10 @@ def translate(text, target_lang='es'):
 
 
 def get_language_by_telegram_id(cid):
-    """Fetch the user's language preference via an API request."""
-    response = requests.get(f"{BASE_URL}/languages/{cid}")
-    if response.status_code == 200:
-        return response.json().get('language', 'es')
+    # """Fetch the user's language preference via an API request."""
+    # response = requests.get(f"{BASE_URL}/languages/{cid}")
+    # if response.status_code == 200:
+    #     return response.json().get('language', 'es')
     return 'es'
     
 # Fetch language preference from API
@@ -60,13 +60,10 @@ def edit_language(bot, message):
 
 def change_language(cid, language_code):
     """Update the user's language preference via an API request and delete the Redis cache."""
+    redis_client.delete(f"language:{cid}")
     url = f"{BASE_URL}//languages/{cid}"
     data = {'language': language_code}
-    response = requests.put(url, json=data)
-    
-    if response.status_code == 200:
-        # Delete the Redis cache for the user's language
-        redis_client.delete(f"language:{cid}")
+    response = requests.put(url, json=data)       
     
     return response
 
