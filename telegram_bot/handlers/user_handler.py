@@ -300,7 +300,21 @@ def confirmation_handler(message, bot):
     markup_remove = types.ReplyKeyboardRemove()
 
     if user_input == yes_option:
-        # Proceed with user creation
+        # Validate if the user already exists
+        cedula = user_data[cid]["cedula"]
+        validation_response = requests.get(f"{BASE_URL}/users/{cedula}")
+        
+        if validation_response.status_code == 200:
+            # User already exists
+            bot.send_message(cid, translate("El usuario ya se encuentra registrado.", target_lang), reply_markup=markup_remove)
+            return
+        
+        elif validation_response.status_code != 404:
+            # Handle unexpected errors from the server
+            bot.send_message(cid, translate("Error al verificar el usuario. Por favor, inténtelo de nuevo más tarde.", target_lang), reply_markup=markup_remove)
+            return
+        
+        # Proceed with user creation if the user does not exist
         bot.send_message(cid, translate("Procesando...", target_lang), reply_markup=markup_remove)
         response = requests.post(f"{BASE_URL}/users", json=user_data[cid])
         if response.status_code != 201:

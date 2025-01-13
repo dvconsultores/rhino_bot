@@ -62,8 +62,26 @@ def cancel_process(bot, message):
 
 # Step 1: Fetch payment methods and display them as buttons
 def start_payment(bot, message):
+    """Start the payment process after validating user existence."""
     cid = message.chat.id
     target_lang = get_language_by_telegram_id(cid)
+
+    # Validate if the user exists
+    user_validation_response = requests.get(f"{BASE_URL}/users/{cid}")
+    if user_validation_response.status_code == 404:
+        # User does not exist
+        bot.send_message(
+            cid,
+            translate("Para ingresar pago debe registrarse en la plataforma.", target_lang),
+        )
+        return
+    elif user_validation_response.status_code != 200:
+        # Handle unexpected errors from the server
+        bot.send_message(
+            cid,
+            translate("Error al verificar el usuario. Por favor, inténtelo de nuevo más tarde.", target_lang),
+        )
+        return
 
     # Fetch payment methods from the API
     response = requests.get(f"{BASE_URL}/payment_methods")
@@ -85,6 +103,7 @@ def start_payment(bot, message):
 
     bot.send_message(cid, translate("Seleccione un método de pago:", target_lang), reply_markup=markup)
     bot.register_next_step_handler(message, lambda msg: handle_payment_method_selection(bot, msg, payment_methods))
+
 
 # Step 1b: Handle selected payment method from user’s message text
 def handle_payment_method_selection(bot, message, payment_methods):

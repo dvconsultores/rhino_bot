@@ -5,6 +5,7 @@ from flasgger import swag_from
 from services.user_service import (
     get_all_users,
     get_user_by_id,
+    get_user_by_cedula,
     get_user_by_telegram_id,
     create_user,
     update_user
@@ -48,7 +49,7 @@ def get_users():
     users = get_all_users()
     return jsonify([user.to_dict() for user in users])
 
-@user_bp.route('/users/<int:user_id>', methods=['GET'])
+@user_bp.route('/users/<int:cedula>', methods=['GET'])
 @swag_from({
     'tags': ['Users'],
     'summary': 'Get a user by ID',
@@ -88,8 +89,56 @@ def get_users():
         }
     }
 })
-def get_user(user_id):
-    user = get_user_by_telegram_id(user_id)
+def get_user(id):
+    user = get_user_by_id(id)
+    if user:
+        return jsonify(user.to_dict())
+    else:
+        print(f"User with ID {user_id} not found")  # Debug statement
+        return ('', 404)
+
+@user_bp.route('/users/cedula/<int:cedula>', methods=['GET'])
+@swag_from({
+    'tags': ['Users'],
+    'summary': 'Get a user by ID',
+    'description': 'Retrieve a user by their ID.',
+    'parameters': [
+        {
+            'name': 'user_id',
+            'in': 'path',
+            'type': 'integer',
+            'required': True,
+            'description': 'The ID of the user'
+        }
+    ],
+    'responses': {
+        200: {
+            'description': 'A user',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'id': {'type': 'integer'},
+                    'name': {'type': 'string'},
+                    'lastname': {'type': 'string'},
+                    'cedula': {'type': 'integer'},
+                    'email': {'type': 'string'},
+                    'date_of_birth': {'type': 'string', 'format': 'date'},
+                    'phone': {'type': 'integer'},
+                    'instagram': {'type': 'string'},
+                    'type': {'type': 'string'},
+                    'status': {'type': 'string'},
+                    'creation_date': {'type': 'string', 'format': 'date-time'},
+                    'telegram_id': {'type': 'integer'}
+                }
+            }
+        },
+        '204': {
+            'description': 'User not found'
+        }
+    }
+})
+def get_user(cedula):
+    user = get_user_by_cedula(cedula)
     if user:
         return jsonify(user.to_dict())
     else:
