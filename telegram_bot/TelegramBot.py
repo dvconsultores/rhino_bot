@@ -15,21 +15,18 @@ from handlers.attendance_handler import add_attendance_handler, list_coaches_for
 from deep_translator import GoogleTranslator
 import requests
 import redis
-from redis_client import redis_client
 # Load .env file
 load_dotenv()
 
 # Initialize Redis client
 redis_host = os.getenv('REDIS_HOST', 'localhost')
-redis_port = os.getenv('REDIS_PORT', 6379)
-redis_password = os.getenv('REDIS_PASSWORD', None)
-
-redis_client = redis.StrictRedis(
-    host=redis_host,
-    port=redis_port,
-    password=redis_password,
-    decode_responses=True
-)
+redis_port = os.getenv('REDIS_PORT', 6380)
+try:
+    redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=0)
+    redis_client.ping()  # Check if the connection is successful
+except redis.ConnectionError as e:
+    print(f"Redis connection error: {e}")
+    redis_client = None
 
 # Ensure the reports directory exists
 if not os.path.exists('reports'):

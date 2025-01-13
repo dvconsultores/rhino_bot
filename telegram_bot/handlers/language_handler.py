@@ -8,10 +8,21 @@ from deep_translator import GoogleTranslator
 from telebot import types
 from telebot.types import Message
 import requests
-from redis_client import redis_client
+import redis
 
 # Load environment variables
 load_dotenv()
+
+# Initialize Redis client
+redis_host = os.getenv('REDIS_HOST', 'localhost')
+redis_port = os.getenv('REDIS_PORT', 6380)
+
+try:
+    redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=0)
+    redis_client.ping()  # Check if the connection is successful
+except redis.ConnectionError as e:
+    print(f"Redis connection error: {e}")
+    redis_client = None
 
 # Base API URL
 BASE_URL = os.getenv("API_BASE_URL", "http://web:5000")
