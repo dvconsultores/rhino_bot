@@ -14,8 +14,22 @@ from handlers.coaches_handler import add_coach_handler, delete_coach_handler, ed
 from handlers.attendance_handler import add_attendance_handler, list_coaches_for_attendance, handle_coach_selection, list_locations_for_attendance
 from deep_translator import GoogleTranslator
 import requests
+import redis
+from .redis_client import redis_client
 # Load .env file
 load_dotenv()
+
+# Initialize Redis client
+redis_host = os.getenv('REDIS_HOST', 'localhost')
+redis_port = os.getenv('REDIS_PORT', 6379)
+redis_password = os.getenv('REDIS_PASSWORD', None)
+
+redis_client = redis.StrictRedis(
+    host=redis_host,
+    port=redis_port,
+    password=redis_password,
+    decode_responses=True
+)
 
 # Ensure the reports directory exists
 if not os.path.exists('reports'):
@@ -23,7 +37,7 @@ if not os.path.exists('reports'):
 
 def generate_user_report():
     """Fetch user data from the API and generate an Excel report."""
-    response = requests.get("http://127.0.0.1:5000/users")
+    response = requests.get("http://web:5000/users")
     if response.status_code == 200:
         users = response.json()
         df = pd.DataFrame(users)
@@ -38,7 +52,7 @@ def generate_user_report():
 API_TOKEN = os.getenv("API_TOKEN")
 bot = telebot.TeleBot(API_TOKEN)
 # Base API URL
-BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:5000")
+BASE_URL = os.getenv("API_BASE_URL", "http://web:5000")
 
 class UserType(Enum):
     coach = "coach"
@@ -63,9 +77,19 @@ def translate(text, target_lang='es'):
 
 def get_language_by_telegram_id(cid):
     """Fetch the user's language preference via an API request."""
+    # Check Redis for the language preference
+    language = redis_client.get(f"language:{cid}")
+    if language:
+        return language
+
+    # If not found in Redis, fetch from API
     response = requests.get(f"{BASE_URL}/languages/{cid}")
     if response.status_code == 200:
-        return response.json().get('Language', 'es')
+        language = response.json().get('Language', 'es')
+        # Store the language preference in Redis
+        redis_client.set(f"language:{cid}", language)
+        return language
+
     return 'es'
 
 @bot.message_handler(commands=['start'])

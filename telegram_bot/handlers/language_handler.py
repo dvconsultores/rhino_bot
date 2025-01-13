@@ -7,12 +7,14 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from deep_translator import GoogleTranslator
 from telebot import types
 from telebot.types import Message
+import requests
+from ..redis_client import redis_client
 
 # Load environment variables
 load_dotenv()
 
 # Base API URL
-BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:5000")
+BASE_URL = os.getenv("API_BASE_URL", "http://web:5000")
 
 
 def translate(text, target_lang='es'):
@@ -46,10 +48,15 @@ def edit_language(bot, message):
     bot.register_next_step_handler(message, lambda msg: set_user_language(bot, msg))
 
 def change_language(cid, language_code):
-    """Update the user's language preference via an API request."""
-    url = f"http://localhost:5000/languages/{cid}"
+    """Update the user's language preference via an API request and delete the Redis cache."""
+    url = f"{BASE_URL}//languages/{cid}"
     data = {'language': language_code}
     response = requests.put(url, json=data)
+    
+    if response.status_code == 200:
+        # Delete the Redis cache for the user's language
+        redis_client.delete(f"language:{cid}")
+    
     return response
 
 def set_user_language(bot, message):

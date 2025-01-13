@@ -13,7 +13,7 @@ API_TOKEN = os.getenv("API_TOKEN")
 bot = telebot.TeleBot(API_TOKEN)
 
 # Base API URL
-BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:5000")
+BASE_URL = os.getenv("API_BASE_URL", "http://web:5000")
 
 def translate(text, target_lang='es'):
     """Translate text to the target language using GoogleTranslator."""
