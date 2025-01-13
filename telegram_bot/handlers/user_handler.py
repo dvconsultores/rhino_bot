@@ -297,7 +297,12 @@ def confirmation_handler(message, bot):
         # Proceed with user creation
         bot.send_message(cid, translate("Procesando...", target_lang))
         # Here you can add code to save the user data to the database
-        bot.send_message(cid, translate("Usuario creado con éxito.", target_lang), reply_markup=markup_remove)
+        response = requests.post(f"{BASE_URL}/users", json=user_data[cid])
+        if response.status_code != 201:
+            bot.send_message(cid, f"{translate('Error al crear el usuario.', target_lang)} Error: {response.status_code}", reply_markup=markup_remove)
+            return
+        else:    
+            bot.send_message(cid, translate("Usuario creado con éxito.", target_lang), reply_markup=markup_remove)
     elif message.text.strip().lower() == translate("No", target_lang).lower():
         # Restart user creation process
         bot.send_message(cid, translate("Reiniciando el proceso de creación de usuario.", target_lang), reply_markup=markup_remove)
