@@ -49,7 +49,7 @@ def get_users():
     users = get_all_users()
     return jsonify([user.to_dict() for user in users])
 
-@user_bp.route('/users/<int:cedula>', methods=['GET'])
+@user_bp.route('/users/<int:id>', methods=['GET'])
 @swag_from({
     'tags': ['Users'],
     'summary': 'Get a user by ID',
@@ -89,8 +89,8 @@ def get_users():
         }
     }
 })
-def get_user(id):
-    user = get_user_by_id(id)
+def get_user_by_id_controller(user_id):
+    user = get_user_by_id(user_id)
     if user:
         return jsonify(user.to_dict())
     else:
@@ -100,15 +100,15 @@ def get_user(id):
 @user_bp.route('/users/cedula/<int:cedula>', methods=['GET'])
 @swag_from({
     'tags': ['Users'],
-    'summary': 'Get a user by ID',
-    'description': 'Retrieve a user by their ID.',
+    'summary': 'Get a user by Cedula',
+    'description': 'Retrieve a user by their Cedula.',
     'parameters': [
         {
-            'name': 'user_id',
+            'name': 'cedula',
             'in': 'path',
             'type': 'integer',
             'required': True,
-            'description': 'The ID of the user'
+            'description': 'The Cedula of the user'
         }
     ],
     'responses': {
@@ -137,7 +137,7 @@ def get_user(id):
         }
     }
 })
-def get_user(cedula):
+def get_user_by_cedula_controller(cedula):
     user = get_user_by_cedula(cedula)
     if user:
         return jsonify(user.to_dict())
@@ -317,58 +317,7 @@ def update_user_by_telegram_id(telegram_id):
     # Update the user using the service function to find by telegram_id
     user = get_user_by_telegram_id(telegram_id)
     if user:
-        updated_user = update_user(user.id, data)
+        updated_user = update_user(telegram_id, data)
         return jsonify(updated_user.to_dict()) if updated_user else ('', 404)
-    else:
-        return ('', 404)
-
-
-
-@user_bp.route('/users/<int:user_id>', methods=['DELETE'])
-@swag_from({
-    'tags': ['Users'],
-    'summary': 'Delete a user',
-    'description': 'Delete a user by their ID.',
-    'parameters': [
-        {
-            'name': 'user_id',
-            'in': 'path',
-            'type': 'integer',
-            'required': True,
-            'description': 'The ID of the user'
-        }
-    ],
-    'responses': {
-        200: {
-            'description': 'User deleted',
-            'schema': {
-                'type': 'object',
-                'properties': {
-                    'id': {'type': 'integer'},
-                    'name': {'type': 'string'},
-                    'lastname': {'type': 'string'},
-                    'cedula': {'type': 'integer'},
-                    'email': {'type': 'string'},
-                    'date_of_birth': {'type': 'string', 'format': 'date'},
-                    'phone': {'type': 'integer'},
-                    'instagram': {'type': 'string'},
-                    'type': {'type': 'string'},
-                    'status': {'type': 'string'},
-                    'creation_date': {'type': 'string', 'format': 'date-time'},
-                    'telegram_id': {'type': 'integer'}
-                }
-            }
-        },
-        404: {
-            'description': 'User not found'
-        }
-    }
-})
-def delete_user(user_id):
-    user = get_user_by_id(user_id)
-    if user:
-        db.session.delete(user)
-        db.session.commit()
-        return jsonify(user.to_dict())
     else:
         return ('', 404)

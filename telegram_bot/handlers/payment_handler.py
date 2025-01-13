@@ -37,10 +37,10 @@ def translate(text, target_lang='es'):
 
 
 def get_language_by_telegram_id(cid):
-    """Fetch the user's language preference via an API request."""
-    response = requests.get(f"{BASE_URL}/languages/{cid}")
-    if response.status_code == 200:
-        return response.json().get('language', 'es')
+    # """Fetch the user's language preference via an API request."""
+    # response = requests.get(f"{BASE_URL}/languages/{cid}")
+    # if response.status_code == 200:
+    #     return response.json().get('language', 'es')
     return 'es'
     
 def create_cancel_markup(target_lang='es'):
@@ -67,7 +67,7 @@ def start_payment(bot, message):
     target_lang = get_language_by_telegram_id(cid)
 
     # Validate if the user exists
-    user_validation_response = requests.get(f"{BASE_URL}/users/{cid}")
+    user_validation_response = requests.get(f"{BASE_URL}/users/telegram/{cid}")
     if user_validation_response.status_code == 404:
         # User does not exist
         bot.send_message(

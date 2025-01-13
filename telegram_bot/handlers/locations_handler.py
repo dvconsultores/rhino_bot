@@ -24,10 +24,10 @@ def translate(text, target_lang='es'):
 
 
 def get_language_by_telegram_id(cid):
-    """Fetch the user's language preference via an API request."""
-    response = requests.get(f"{BASE_URL}/languages/{cid}")
-    if response.status_code == 200:
-        return response.json().get('language', 'es')
+    # """Fetch the user's language preference via an API request."""
+    # response = requests.get(f"{BASE_URL}/languages/{cid}")
+    # if response.status_code == 200:
+    #     return response.json().get('language', 'es')
     return 'es'
     
 def create_cancel_markup(target_lang='es'):

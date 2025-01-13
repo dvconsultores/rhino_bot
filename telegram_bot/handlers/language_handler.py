@@ -44,10 +44,10 @@ def get_language_by_telegram_id(cid):
     
 # Fetch language preference from API
 def fetch_language_from_db(telegram_id):
-    """Fetch language preference from API by Telegram ID."""
-    response = requests.get(f"{BASE_URL}/languages/{telegram_id}")
-    if response.status_code == 200:
-        return response.json().get('Language', 'es')
+    # """Fetch language preference from API by Telegram ID."""
+    # response = requests.get(f"{BASE_URL}/languages/{telegram_id}")
+    # if response.status_code == 200:
+    #     return response.json().get('Language', 'es')
     return 'es'
 
 def edit_language(bot, message):

@@ -32,6 +32,58 @@ load_dotenv()
 if not os.path.exists('reports'):
     os.makedirs('reports')
 
+
+
+# Telegram Bot setup
+API_TOKEN = os.getenv("API_TOKEN")
+bot = telebot.TeleBot(API_TOKEN)
+# Base API URL
+BASE_URL = os.getenv("API_BASE_URL", "http://web:5000")
+
+@bot.message_handler(commands=['mis_datos'])
+def list_user_data(message):
+    """Fetch user data from the API and display it in a formatted message."""
+    cid = message.chat.id
+    target_lang = get_language_by_telegram_id(cid)
+    response = requests.get(f"{BASE_URL}/users/telegram/{cid}")
+
+    if response.status_code == 200:
+        try:
+            user = response.json()  # The response is a single user dictionary
+
+            if not isinstance(user, dict):  # Ensure the response is a dictionary
+                raise ValueError("Unexpected API response format")
+
+            # Format the user data for display
+            formatted_user = (
+                translate("Datos del usuario asociado:", target_lang) + "\n\n" +
+                f"🔹 {translate('Nombre', target_lang)}: {user.get('name', 'N/A')}\n"
+                f"🔹 {translate('Apellido', target_lang)}: {user.get('lastname', 'N/A')}\n"
+                f"🔹 {translate('Cédula', target_lang)}: {user.get('cedula', 'N/A')}\n"
+                f"🔹 {translate('Correo electrónico', target_lang)}: {user.get('email', 'N/A')}\n"
+                f"🔹 {translate('Teléfono', target_lang)}: {user.get('phone', 'N/A')}\n"
+                f"🔹 {translate('Instagram', target_lang)}: {user.get('instagram', 'N/A')}\n"
+                f"🔹 {translate('Fecha de nacimiento', target_lang)}: {user.get('date_of_birth', 'N/A')}\n"
+                f"🔹 {translate('Estatus', target_lang)}: {user.get('estatus', 'N/A')}\n"
+                f"🔹 {translate('Tipo', target_lang)}: {user.get('type', 'N/A')}\n"
+                f"🔹 {translate('Fecha de creación', target_lang)}: {user.get('creation_date', 'N/A')}\n"
+            )
+
+            # Send the formatted user data to the bot
+            bot.send_message(cid, formatted_user)
+        except ValueError as e:
+            bot.send_message(cid, translate("Error inesperado en la respuesta del servidor.", target_lang))
+            print(f"Error parsing user data: {e}")
+        except Exception as e:
+            bot.send_message(cid, translate("Error al procesar los datos de usuario.", target_lang))
+            print(f"Unexpected error: {e}")
+    elif response.status_code == 404:
+        bot.send_message(cid, translate("No se encontraron usuarios asociados a este Telegram ID.", target_lang))
+    else:
+        bot.send_message(cid, translate("Error al obtener los datos de usuario. Intenta nuevamente más tarde.", target_lang))
+
+
+
 def generate_user_report():
     """Fetch user data from the API and generate an Excel report."""
     response = requests.get("http://web:5000/users")
@@ -45,12 +97,6 @@ def generate_user_report():
         print("Failed to fetch user data")
         return None    
 
-# Telegram Bot setup
-API_TOKEN = os.getenv("API_TOKEN")
-bot = telebot.TeleBot(API_TOKEN)
-# Base API URL
-BASE_URL = os.getenv("API_BASE_URL", "http://web:5000")
-
 class UserType(Enum):
     coach = "coach"
     administrativo = "administrativo"
@@ -60,7 +106,7 @@ class UserType(Enum):
 def get_user_type(cid):
     """Fetch the user's type via an API request or database query."""
     # This is a placeholder function. Replace it with the actual implementation.
-    response = requests.get(f"{BASE_URL}/users/{cid}")
+    response = requests.get(f"{BASE_URL}/users/telegram/{cid}")
     if response.status_code == 200:
         return UserType(response.json().get('type'))
     return UserType.cliente  # Default to 'cliente' if not found

@@ -24,10 +24,10 @@ def translate(text, target_lang='es'):
 
 
 def get_language_by_telegram_id(cid):
-    """Fetch the user's language preference via an API request."""
-    response = requests.get(f"{BASE_URL}/languages/{cid}")
-    if response.status_code == 200:
-        return response.json().get('language', 'es')
+    # """Fetch the user's language preference via an API request."""
+    # response = requests.get(f"{BASE_URL}/languages/{cid}")
+    # if response.status_code == 200:
+    #     return response.json().get('language', 'es')
     return 'es'
 
 # Helper function to validate date format
@@ -55,7 +55,7 @@ def fetch_user_info(message, bot):
     target_lang = get_language_by_telegram_id(cid)
     user_id = message.text
     try:
-        response = requests.get(f"{BASE_URL}/users/{user_id}")
+        response = requests.get(f"{BASE_URL}/users/cedula/{user_id}")
         if response.status_code == 200:
             user_data = response.json()
             user_info = "\n".join([f"{key}: {value}" for key, value in user_data.items()])
@@ -302,12 +302,12 @@ def confirmation_handler(message, bot):
     if user_input == yes_option:
         # Validate if the user already exists
         cedula = user_data[cid]["cedula"]
-        validation_response = requests.get(f"{BASE_URL}/users/{cedula}")
+        validation_response = requests.get(f"{BASE_URL}/users/cedula/{cedula}")
         
         if validation_response.status_code == 200:
             # User already exists, proceed with update
             bot.send_message(cid, translate("El usuario ya existe. Actualizando información...", target_lang), reply_markup=markup_remove)
-            update_response = requests.put(f"{BASE_URL}/users/{cedula}", json=user_data[cid])
+            update_response = requests.put(f"{BASE_URL}/users/telegram/{cid}", json=user_data[cid])
             if update_response.status_code == 200:
                 bot.send_message(cid, translate("Información del usuario actualizada con éxito.", target_lang), reply_markup=markup_remove)
             else:

@@ -20,8 +20,8 @@ def create_user(data):
     db.session.commit()
     return new_user
 
-def update_user(user_id, data):
-    user = User.query.get(user_id)
+def update_user(telegram_id, data):
+    user = User.query.filter_by(telegram_id=telegram_id).first()
     if user:
         for key, value in data.items():
             setattr(user, key, value)
