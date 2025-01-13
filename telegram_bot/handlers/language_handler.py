@@ -8,7 +8,7 @@ from deep_translator import GoogleTranslator
 from telebot import types
 from telebot.types import Message
 import requests
-from ..redis_client import redis_client
+from redis_client import redis_client
 
 # Load environment variables
 load_dotenv()

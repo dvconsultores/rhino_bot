@@ -15,7 +15,7 @@ from handlers.attendance_handler import add_attendance_handler, list_coaches_for
 from deep_translator import GoogleTranslator
 import requests
 import redis
-from .redis_client import redis_client
+from redis_client import redis_client
 # Load .env file
 load_dotenv()
 
