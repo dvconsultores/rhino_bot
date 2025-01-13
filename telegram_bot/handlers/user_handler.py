@@ -305,8 +305,13 @@ def confirmation_handler(message, bot):
         validation_response = requests.get(f"{BASE_URL}/users/{cedula}")
         
         if validation_response.status_code == 200:
-            # User already exists
-            bot.send_message(cid, translate("El usuario ya se encuentra registrado.", target_lang), reply_markup=markup_remove)
+            # User already exists, proceed with update
+            bot.send_message(cid, translate("El usuario ya existe. Actualizando información...", target_lang), reply_markup=markup_remove)
+            update_response = requests.put(f"{BASE_URL}/users/{cedula}", json=user_data[cid])
+            if update_response.status_code == 200:
+                bot.send_message(cid, translate("Información del usuario actualizada con éxito.", target_lang), reply_markup=markup_remove)
+            else:
+                bot.send_message(cid, f"{translate('Error al actualizar el usuario.', target_lang)} Error: {update_response.status_code}", reply_markup=markup_remove)
             return
         
         elif validation_response.status_code != 404:
@@ -321,6 +326,7 @@ def confirmation_handler(message, bot):
             bot.send_message(cid, f"{translate('Error al crear el usuario.', target_lang)} Error: {response.status_code}", reply_markup=markup_remove)
             return
         bot.send_message(cid, translate("Usuario creado con éxito.", target_lang), reply_markup=markup_remove)
+
     elif user_input == no_option:
         # Restart user creation process
         bot.send_message(cid, translate("Reiniciando el proceso de creación de usuario.", target_lang), reply_markup=markup_remove)
@@ -332,6 +338,7 @@ def confirmation_handler(message, bot):
         # Handle invalid input
         bot.send_message(cid, translate("Entrada no válida. Por favor, seleccione una opción válida.", target_lang), reply_markup=markup_remove)
         process_instagram(message, bot)  # Restart the confirmation step
+
 
 
 def process_payment(bot, message):
