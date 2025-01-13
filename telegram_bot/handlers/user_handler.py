@@ -272,7 +272,7 @@ def process_instagram(message, bot):
     # Display collected data for confirmation with personalized titles, limited to 7 fields
     user_info = "\n".join([f"{titles.get(key, key)}: {value}" 
                         for key, value in list(user_data[message.chat.id].items())[:7] if value])
-    confirmation_text = translate("Por favor, confirme la información del usuario:", target_lang) + "\n" + user_info
+    confirmation_text = translate("Por favor, confirme sus datos:", target_lang) + "\n" + user_info
 
     # Show confirmation options with Yes, No, and Cancel buttons
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)

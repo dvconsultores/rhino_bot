@@ -193,7 +193,7 @@ def get_user_by_telegram_id_controller(telegram_id):
         }
     }
 })
-def create_user():
+def create_user_controller():
     data = request.get_json()
     new_user = create_user(data)
     return jsonify(new_user.to_dict()), 201
