@@ -177,6 +177,7 @@ def process_payment_proof(bot, message):
 
 # Step 5: Show confirmation with collected data
 def show_confirmation(cid, bot):
+    """Display payment confirmation with collected data."""
     target_lang = get_language_by_telegram_id(cid)
     data = payment_data[cid]
     confirmation_text = (
@@ -199,25 +200,37 @@ def show_confirmation(cid, bot):
     msg = bot.send_message(cid, confirmation_text, reply_markup=markup, parse_mode="Markdown")
     bot.register_next_step_handler(msg, lambda msg: confirmation_handler(bot, msg))
 
+
 # Step 6: Handle confirmation response
 def confirmation_handler(bot, message):
+    """Handle the user's confirmation response."""
     cid = message.chat.id
     target_lang = get_language_by_telegram_id(cid)
 
-    if message.text not in [translate("Sí", target_lang), translate("No", target_lang), translate("Cancelar", target_lang)]:
+    # Normalize input to handle both text and button clicks
+    user_input = message.text.strip().lower()
+    yes_option = translate("Sí", target_lang).lower()
+    no_option = translate("No", target_lang).lower()
+    cancel_option = translate("Cancelar", target_lang).lower()
+
+    if user_input not in [yes_option, no_option, cancel_option]:
         bot.send_message(cid, translate("Opción inválida. Por favor, seleccione 'Sí', 'No' o 'Cancelar'.", target_lang))
         bot.register_next_step_handler(message, lambda msg: confirmation_handler(bot, msg))
         return
-   
-    if message.text == translate("Sí", target_lang):
-        submit_payment(cid)  # Proceed with payment submission
+
+    if user_input == yes_option:
+        # Proceed with payment submission
         bot.send_message(cid, translate("Procesando...", target_lang))
-    elif message.text == translate("No", target_lang):
+        submit_payment(cid)
+    elif user_input == no_option:
+        # Restart payment process
         bot.send_message(cid, translate("Reiniciando el proceso de pago.", target_lang))
-        start_payment(bot, message)  # Restart the payment process
-    elif message.text == translate("Cancelar", target_lang):
+        start_payment(bot, message)
+    elif user_input == cancel_option:
+        # Cancel payment process
         bot.send_message(cid, translate("Proceso de pago cancelado.", target_lang))
         payment_data.pop(cid, None)  # Clear stored payment data
+
 
 # Submit payment to the API
 def submit_payment(cid):

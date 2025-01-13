@@ -289,27 +289,36 @@ def confirmation_handler(message, bot):
     """Handle the user's confirmation choice."""
     cid = message.chat.id
     target_lang = get_language_by_telegram_id(cid)
-    
+
+    # Normalize input to match button text (case insensitive)
+    user_input = message.text.strip().lower()
+    yes_option = translate("Sí", target_lang).lower()
+    no_option = translate("No", target_lang).lower()
+    cancel_option = translate("Cancelar", target_lang).lower()
+
     # Remove the reply keyboard
     markup_remove = types.ReplyKeyboardRemove()
-    
-    if message.text.strip().lower() == translate("Sí", target_lang).lower():
+
+    if user_input == yes_option:
         # Proceed with user creation
-        bot.send_message(cid, translate("Procesando...", target_lang))
-        # Here you can add code to save the user data to the database
+        bot.send_message(cid, translate("Procesando...", target_lang), reply_markup=markup_remove)
         response = requests.post(f"{BASE_URL}/users", json=user_data[cid])
         if response.status_code != 201:
             bot.send_message(cid, f"{translate('Error al crear el usuario.', target_lang)} Error: {response.status_code}", reply_markup=markup_remove)
             return
-        else:    
-            bot.send_message(cid, translate("Usuario creado con éxito.", target_lang), reply_markup=markup_remove)
-    elif message.text.strip().lower() == translate("No", target_lang).lower():
+        bot.send_message(cid, translate("Usuario creado con éxito.", target_lang), reply_markup=markup_remove)
+    elif user_input == no_option:
         # Restart user creation process
         bot.send_message(cid, translate("Reiniciando el proceso de creación de usuario.", target_lang), reply_markup=markup_remove)
         create_user(bot, message)
-    elif message.text.strip().lower() == translate("Cancelar", target_lang).lower():
+    elif user_input == cancel_option:
         # Cancel user creation
         cancel_process(bot, message)
+    else:
+        # Handle invalid input
+        bot.send_message(cid, translate("Entrada no válida. Por favor, seleccione una opción válida.", target_lang), reply_markup=markup_remove)
+        process_instagram(message, bot)  # Restart the confirmation step
+
 
 def process_payment(bot, message):
     """Procesar el pago."""
