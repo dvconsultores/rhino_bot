@@ -64,9 +64,6 @@ def list_user_data(message):
                 f"🔹 {translate('Teléfono', target_lang)}: {user.get('phone', 'N/A')}\n"
                 f"🔹 {translate('Instagram', target_lang)}: {user.get('instagram', 'N/A')}\n"
                 f"🔹 {translate('Fecha de nacimiento', target_lang)}: {user.get('date_of_birth', 'N/A')}\n"
-                f"🔹 {translate('Estatus', target_lang)}: {user.get('estatus', 'N/A')}\n"
-                f"🔹 {translate('Tipo', target_lang)}: {user.get('type', 'N/A')}\n"
-                f"🔹 {translate('Fecha de creación', target_lang)}: {user.get('creation_date', 'N/A')}\n"
             )
 
             # Send the formatted user data to the bot
