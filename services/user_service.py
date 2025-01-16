@@ -12,7 +12,10 @@ def get_user_by_cedula(cedula):
     return User.query.filter_by(cedula=cedula).first()    
 
 def get_user_by_telegram_id(telegram_id):
-    return User.query.filter_by(telegram_id=telegram_id).first()    
+    return User.query.filter_by(telegram_id=telegram_id).first()
+
+def get_user_by_email(email):
+    return User.query.filter_by(email=email).first()        
 
 def create_user(data):
     new_user = User(**data)

@@ -7,6 +7,7 @@ from services.user_service import (
     get_user_by_id,
     get_user_by_cedula,
     get_user_by_telegram_id,
+    get_user_by_email,
     create_user,
     update_user
 )
@@ -142,7 +143,7 @@ def get_user_by_cedula_controller(cedula):
     if user:
         return jsonify(user.to_dict())
     else:
-        print(f"User with ID {user_id} not found")  # Debug statement
+        print(f"User with ID {cedula} not found")  # Debug statement
         return ('', 404)
 
 
@@ -190,6 +191,51 @@ def get_user_by_telegram_id_controller(telegram_id):
     # Use the service function to retrieve the user
     user = get_user_by_telegram_id(telegram_id)
     return jsonify(user.to_dict()) if user else ('', 404)
+
+ 
+@user_bp.route('/users/email/<string:email>', methods=['GET'])
+@swag_from({
+    'tags': ['Users'],
+    'summary': 'Get a user by email',
+    'description': 'Retrieve a user by their email.',
+    'parameters': [
+        {
+            'name': 'email',
+            'in': 'path',
+            'type': 'string',
+            'required': True,
+            'description': 'The email of the user'
+        }
+    ],
+    'responses': {
+        200: {
+            'description': 'A user',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'id': {'type': 'integer'},
+                    'name': {'type': 'string'},
+                    'lastname': {'type': 'string'},
+                    'cedula': {'type': 'integer'},
+                    'email': {'type': 'string'},
+                    'date_of_birth': {'type': 'string', 'format': 'date'},
+                    'phone': {'type': 'integer'},
+                    'instagram': {'type': 'string'},
+                    'type': {'type': 'string'},
+                    'status': {'type': 'string'},
+                    'creation_date': {'type': 'string', 'format': 'date-time'},
+                    'telegram_id': {'type': 'integer'}
+                }
+            }
+        },
+        404: {
+            'description': 'User not found'
+        }
+    }
+})
+def get_user_by_email_controller(email):
+    user = get_user_by_email(email)
+    return jsonify(user.to_dict()) if user else ('', 404)    
 
 
 @user_bp.route('/users', methods=['POST'])

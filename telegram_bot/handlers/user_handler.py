@@ -303,8 +303,12 @@ def confirmation_handler(message, bot):
         # Validate if the user already exists
         cedula = user_data[cid]["cedula"]
         validation_response = requests.get(f"{BASE_URL}/users/cedula/{cedula}")
+        email = user_data[cid]["email"]
+        validation_response_email = requests.get(f"{BASE_URL}/users/email/{email}")
+        telegram_id = user_data[cid]["telegram_id"]
+        validation_response_telegram = requests.get(f"{BASE_URL}/users/telegram/{telegram_id}")
         
-        if validation_response.status_code == 200:
+        if validation_response.status_code == 200 or validation_response_email.status_code == 200 or validation_response_telegram.status_code == 200:
             # User already exists, proceed with update
             bot.send_message(cid, translate("El usuario ya existe. Actualizando información...", target_lang), reply_markup=markup_remove)
             update_response = requests.put(f"{BASE_URL}/users/telegram/{cid}", json=user_data[cid])
