@@ -156,7 +156,6 @@ def command_start(message):
     command_list(message)
 
 @bot.message_handler(commands=['menu'])
-@bot.message_handler(commands=['menu'])
 def command_list(message):
     cid = message.chat.id
     target_lang = get_language_by_telegram_id(cid)  # Get the user's language preference
@@ -298,8 +297,11 @@ def listAdmin(m):
 
 def reporte_clientes(m):
     #print(call)
-    """Handle the button click to generate and send the user report."""
     cid = m.chat.id
+    """Handle the button click to generate and send the user report."""
+    target_lang = get_language_by_telegram_id(cid)  # Get the user's language preference
+    bot.send_message(m.chat.id, translate("Generando reporte de clientes...", target_lang))
+
     file_path = generate_user_report()
     if file_path:
         with open(file_path, 'rb') as file:
@@ -308,9 +310,11 @@ def reporte_clientes(m):
         bot.send_message(cid, "Error generating the report.")
 
 def reporte_coachs(m):
+    cid = m.chat.id
     #print(call)
     """Handle the button click to generate and send the user report."""
-    cid = m.chat.id
+    target_lang = get_language_by_telegram_id(cid)  # Get the user's language preference
+    bot.send_message(m.chat.id, translate("Generando reporte de Coachs...", target_lang))
     file_path = generate_coaches_report()
     if file_path:
         with open(file_path, 'rb') as file:
