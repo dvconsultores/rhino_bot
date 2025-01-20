@@ -40,7 +40,7 @@ class User(db.Model):
             'instagram': self.instagram,
             'type': self.type.value,
             'creation_date': self.creation_date.isoformat(),
-            'telegram_id': self.estatus.value,
+            'telegram_id': self.telegram_id ,
             'estatus': self.estatus.value
         }
 
