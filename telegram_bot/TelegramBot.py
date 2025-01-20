@@ -14,6 +14,7 @@ from handlers.coaches_handler import add_coach_handler, delete_coach_handler, ed
 from handlers.attendance_handler import add_attendance_handler, list_coaches_for_attendance, handle_coach_selection, list_locations_for_attendance
 from deep_translator import GoogleTranslator
 import requests
+import pandas as pd
 #import redis
 # Load .env file
 load_dotenv()
@@ -83,7 +84,7 @@ def list_user_data(message):
 
 def generate_user_report():
     """Fetch user data from the API and generate an Excel report."""
-    response = requests.get("http://web:5000/users")
+    response = requests.get(f"{BASE_URL}/users")
     if response.status_code == 200:
         users = response.json()
         df = pd.DataFrame(users)
@@ -92,7 +93,20 @@ def generate_user_report():
         return file_path
     else:
         print("Failed to fetch user data")
-        return None    
+        return None  
+
+def generate_coaches_report():
+    """Fetch user data from the API and generate an Excel report."""
+    response = requests.get(f"{BASE_URL}/coaches")
+    if response.status_code == 200:
+        users = response.json()
+        df = pd.DataFrame(users)
+        file_path = os.path.join('reports', 'coaches_report.xlsx')
+        df.to_excel(file_path, index=False)
+        return file_path
+    else:
+        print("Failed to fetch user data")
+        return None            
 
 class UserType(Enum):
     coach = "coach"
@@ -250,7 +264,8 @@ def callback_handler(call):
         'add_attendance_handler': lambda msg: add_attendance_handler(bot, msg),
 
         # Reports
-        'reporte_clientes': send_user_report,
+        'reporte_clientes': reporte_clientes,
+        'reporte_coachs': reporte_coachs
     }
     func = options.get(call.data)
     if func:
@@ -271,7 +286,7 @@ def listAdmin(m):
     button5 = InlineKeyboardButton(translate("🏅 Entrenadores", target_lang), callback_data="coaches_menu")
     button6 = InlineKeyboardButton(translate("📊 Reporte Clientes", target_lang), callback_data="reporte_clientes")
     button7 = InlineKeyboardButton(translate("📊 Reporte Pagos", target_lang), callback_data="coaches_menu")
-    button8 = InlineKeyboardButton(translate("📊 Reporte Coachs", target_lang), callback_data="coaches_menu")
+    button8 = InlineKeyboardButton(translate("📊 Reporte Coachs", target_lang), callback_data="reporte_coachs")
 
     # Create a nested list of buttons
     buttons = [[button1], [button2], [button3], [button4], [button5], [button6], [button7], [button8]]
@@ -281,16 +296,28 @@ def listAdmin(m):
     reply_markup = InlineKeyboardMarkup(buttons)    
     bot.send_message(cid, help_text, reply_markup=reply_markup) 
 
-@bot.callback_query_handler(func=lambda call: call.data == "reporte_clientes")
-def send_user_report(call):
+def reporte_clientes(m):
+    #print(call)
     """Handle the button click to generate and send the user report."""
-    cid = call.message.chat.id
+    cid = m.chat.id
     file_path = generate_user_report()
     if file_path:
         with open(file_path, 'rb') as file:
             bot.send_document(cid, file)
     else:
         bot.send_message(cid, "Error generating the report.")
+
+def reporte_coachs(m):
+    #print(call)
+    """Handle the button click to generate and send the user report."""
+    cid = m.chat.id
+    file_path = generate_coaches_report()
+    if file_path:
+        with open(file_path, 'rb') as file:
+            bot.send_document(cid, file)
+    else:
+        bot.send_message(cid, "Error generating the report.")        
+
 
 def payment_method_menu(m):
     cid = m.chat.id
