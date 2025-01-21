@@ -190,12 +190,21 @@ def download_payment_screenshot(m):
 # Function to handle the month input
 def download_screen(m):
     cid = m.chat.id
-    file = m.text.strip()
+    file_name = m.text.strip()
     target_lang = get_language_by_telegram_id(cid)
-    file_path = os.path.join('uploads', f"{file}.jpg")
-    if file_path:
-            with open(file_path, 'rb') as file:
-                bot.send_document(cid, file)
+    
+    # Define file paths
+    jpg_file_path = os.path.join('uploads', f"{file_name}.jpg")
+    pdf_file_path = os.path.join('uploads', f"{file_name}.pdf")
+    
+    # Check if the .jpg file exists
+    if os.path.exists(jpg_file_path):
+        with open(jpg_file_path, 'rb') as file:
+            bot.send_document(cid, file)
+    # If .jpg file does not exist, check for .pdf file
+    elif os.path.exists(pdf_file_path):
+        with open(pdf_file_path, 'rb') as file:
+            bot.send_document(cid, file)
     else:
         bot.send_message(cid, translate("Archivo no encontrado.", target_lang))            
   

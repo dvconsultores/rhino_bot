@@ -6,7 +6,6 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from datetime import datetime
 from dotenv import load_dotenv
 from deep_translator import GoogleTranslator
-import mimetypes
 
 # Telegram Bot setup
 API_TOKEN = os.getenv("API_TOKEN")
@@ -169,25 +168,7 @@ def process_payment_reference(bot, message):
 def process_payment_proof(bot, message):
     cid = message.chat.id
     target_lang = get_language_by_telegram_id(cid)
-
-    # Check if the message contains a document
-    if message.document:
-        file_info = bot.get_file(message.document.file_id)
-        file_mime_type, _ = mimetypes.guess_type(file_info.file_path)
-
-        # Check if the file is an image
-        if file_mime_type and file_mime_type.startswith('image/'):
-            # Process the image file
-            file = bot.download_file(file_info.file_path)
-            file_path = f"payment_proofs/{message.document.file_name}"
-            with open(file_path, 'wb') as f:
-                f.write(file)
-            bot.send_message(cid, translate("Imagen recibida y procesada.", target_lang))
-        else:
-            bot.send_message(cid, translate("Por favor, envía solo archivos de imagen.", target_lang))
-    else:
-        bot.send_message(cid, translate("No se encontró ningún archivo adjunto.", target_lang))
-
+    
     # Handle photo or document upload
     if message.content_type == 'photo':
         file_id = message.photo[-1].file_id
