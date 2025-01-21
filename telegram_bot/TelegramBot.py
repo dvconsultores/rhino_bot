@@ -40,6 +40,7 @@ API_TOKEN = os.getenv("API_TOKEN")
 bot = telebot.TeleBot(API_TOKEN)
 # Base API URL
 BASE_URL = os.getenv("API_BASE_URL", "http://web:5000")
+user_data = {}
 
 @bot.message_handler(commands=['mis_datos'])
 def list_user_data(message):
@@ -80,7 +81,7 @@ def list_user_data(message):
     else:
         bot.send_message(cid, translate("Error al obtener los datos de usuario. Intenta nuevamente más tarde.", target_lang))
 
-
+##############################################REPORTS OPTIONS###################################################
 
 def generate_user_report():
     """Fetch user data from the API and generate an Excel report."""
@@ -106,7 +107,101 @@ def generate_coaches_report():
         return file_path
     else:
         print("Failed to fetch user data")
-        return None            
+        return None  
+
+# Function to handle the year input
+def process_year_report(m):
+    cid = m.chat.id
+    target_lang = get_language_by_telegram_id(cid)
+    bot.send_message(cid, translate("Selecciona el año para el reporte", target_lang))
+
+    bot.register_next_step_handler(m, lambda msg: process_month_report(msg))
+
+# Function to handle the month input
+def process_month_report(m):
+    cid = m.chat.id
+    year = m.text.strip()
+    target_lang = get_language_by_telegram_id(cid)
+
+    # Validate if the year is a number
+    if not year.isdigit():
+        bot.send_message(cid, translate("Por favor, ingresa un año válido (un número).", target_lang))
+        bot.register_next_step_handler(m, lambda msg: process_month_report(msg))
+        return
+
+    # Initialize user_data entry for the chat ID if it doesn't exist
+    if cid not in user_data:
+        user_data[cid] = {}    
+
+    # Save the year for later use
+    user_data[cid]['year'] = int(year)
+    bot.send_message(cid, translate("Ahora, selecciona el mes para el reporte (1-12).", target_lang))
+    bot.register_next_step_handler(m, lambda msg: fetch_report_data(msg, year))
+
+# Function to fetch and process the report data
+def fetch_report_data(m, year):
+    cid = m.chat.id
+    month = m.text.strip()
+    target_lang = get_language_by_telegram_id(cid)
+
+    # Validate if the month is a number
+    if not month.isdigit() or not (1 <= int(month) <= 12):
+        bot.send_message(cid, translate("Por favor, ingresa un mes válido (1-12).", target_lang))
+        bot.register_next_step_handler(m, lambda msg: fetch_report_data(msg, year))
+        return
+
+    # Save the month for later use
+    user_data[cid]['month'] = int(month)
+
+    # Call the API to fetch payment data
+    url = f"{BASE_URL}/payments/{year}/{month}"
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        # Process the response (assuming it's JSON)
+        payments_data = response.json()
+
+        # Create a DataFrame and save to an Excel file
+        df = pd.DataFrame(payments_data)
+        file_path = os.path.join('reports', 'payments_report.xlsx')
+        df.to_excel(file_path, index=False)
+
+        bot.send_message(cid, f"⏳ {translate('Generando reporte de Pagos...', target_lang)}")
+        if file_path:
+            with open(file_path, 'rb') as file:
+                bot.send_document(cid, file)
+    else:
+        bot.send_message(cid, "Error al generar el reporte. Inténtalo nuevamente más tarde.")
+
+# Function to handle report generation
+def process_report(m):
+    cid = m.chat.id
+    bot.send_message(cid, "Generando reporte de año...")   
+    process_year_report(m)  
+
+# Function to handle the year input
+def download_payment_screenshot(m):
+    cid = m.chat.id
+    target_lang = get_language_by_telegram_id(cid)
+    bot.send_message(cid, translate("Selecciona el número de archivo", target_lang))
+
+    bot.register_next_step_handler(m, lambda msg: download_screen(msg))
+
+# Function to handle the month input
+def download_screen(m):
+    cid = m.chat.id
+    file = m.text.strip()
+    target_lang = get_language_by_telegram_id(cid)
+    file_path = os.path.join('uploads', f"{file}.jpg")
+    if file_path:
+            with open(file_path, 'rb') as file:
+                bot.send_document(cid, file)
+    else:
+        bot.send_message(cid, translate("Archivo no encontrado.", target_lang))            
+  
+
+    
+###################################################END OF REPORTS OPTIONS###################################################    
 
 class UserType(Enum):
     coach = "coach"
@@ -169,7 +264,7 @@ def command_list(message):
             [InlineKeyboardButton(translate("📋 Ver Planes", target_lang), callback_data="list_plans_customer")],
             [InlineKeyboardButton(translate("📍 Ver Ubicaciones", target_lang), callback_data="list_locations_customer")],
             [InlineKeyboardButton(translate("📅 Ver Horarios", target_lang), callback_data="list_schedules_customer")],
-            [InlineKeyboardButton(translate("💳 Registrar Pago", target_lang), callback_data="start_payment")],
+            [InlineKeyboardButton(translate("💳 Reportar Pago", target_lang), callback_data="start_payment")],
             [InlineKeyboardButton(translate("🏅 Coachs", target_lang), callback_data="add_attendance_handler")],
             # [InlineKeyboardButton(translate("🌐 Cambiar Idioma", target_lang), callback_data="edit_language")]
         ]
@@ -179,7 +274,7 @@ def command_list(message):
             [InlineKeyboardButton(translate("📋 Ver Planes", target_lang), callback_data="list_plans_customer")],
             [InlineKeyboardButton(translate("📍 Ver Ubicaciones", target_lang), callback_data="list_locations_customer")],
             [InlineKeyboardButton(translate("📅 Ver Horarios", target_lang), callback_data="list_schedules_customer")],
-            [InlineKeyboardButton(translate("💳 Registrar Pago", target_lang), callback_data="start_payment")],
+            [InlineKeyboardButton(translate("💳 Reportar Pago", target_lang), callback_data="start_payment")],
             [InlineKeyboardButton(translate("🛠️ Administrar", target_lang), callback_data="listAdmin")],
             # [InlineKeyboardButton(translate("🌐 Cambiar Idioma", target_lang), callback_data="edit_language")]
         ]
@@ -189,7 +284,7 @@ def command_list(message):
             [InlineKeyboardButton(translate("📋 Ver Planes", target_lang), callback_data="list_plans_customer")],
             [InlineKeyboardButton(translate("📍 Ver Ubicaciones", target_lang), callback_data="list_locations_customer")],
             [InlineKeyboardButton(translate("📅 Ver Horarios", target_lang), callback_data="list_schedules_customer")],
-            [InlineKeyboardButton(translate("💳 Registrar Pago", target_lang), callback_data="start_payment")],
+            [InlineKeyboardButton(translate("💳 Reportar Pago", target_lang), callback_data="start_payment")],
             # [InlineKeyboardButton(translate("🌐 Cambiar Idioma", target_lang), callback_data="edit_language")]
         ]
     elif user_type == UserType.owner:
@@ -198,7 +293,7 @@ def command_list(message):
             [InlineKeyboardButton(translate("📋 Ver Planes", target_lang), callback_data="list_plans_customer")],
             [InlineKeyboardButton(translate("📍 Ver Ubicaciones", target_lang), callback_data="list_locations_customer")],
             [InlineKeyboardButton(translate("📅 Ver Horarios", target_lang), callback_data="list_schedules_customer")],
-            [InlineKeyboardButton(translate("💳 Registrar Pago", target_lang), callback_data="start_payment")],
+            [InlineKeyboardButton(translate("💳 Reportar Pago", target_lang), callback_data="start_payment")],
             [InlineKeyboardButton(translate("🏅 Coachs", target_lang), callback_data="add_attendance_handler")],
             [InlineKeyboardButton(translate("🛠️ Administrar", target_lang), callback_data="listAdmin")],
             # [InlineKeyboardButton(translate("🌐 Cambiar Idioma", target_lang), callback_data="edit_language")]
@@ -264,7 +359,9 @@ def callback_handler(call):
 
         # Reports
         'reporte_clientes': reporte_clientes,
-        'reporte_coachs': reporte_coachs
+        'reporte_coachs': reporte_coachs,
+        'process_year_report': process_year_report,
+        'download_payment_screenshot': download_payment_screenshot,
     }
     func = options.get(call.data)
     if func:
@@ -284,11 +381,12 @@ def listAdmin(m):
     button4 = InlineKeyboardButton(translate("📅 Horarios", target_lang), callback_data="schedule_menu")
     button5 = InlineKeyboardButton(translate("🏅 Entrenadores", target_lang), callback_data="coaches_menu")
     button6 = InlineKeyboardButton(translate("📊 Reporte Clientes", target_lang), callback_data="reporte_clientes")
-    button7 = InlineKeyboardButton(translate("📊 Reporte Pagos", target_lang), callback_data="coaches_menu")
+    button7 = InlineKeyboardButton(translate("📊 Reporte Pagos", target_lang), callback_data="process_year_report")
     button8 = InlineKeyboardButton(translate("📊 Reporte Coachs", target_lang), callback_data="reporte_coachs")
+    button9 = InlineKeyboardButton(translate("⬇️ Descargar print de pantalla de pago", target_lang), callback_data="download_payment_screenshot")
 
     # Create a nested list of buttons
-    buttons = [[button1], [button2], [button3], [button4], [button5], [button6], [button7], [button8]]
+    buttons = [[button1], [button2], [button3], [button4], [button5], [button6], [button7], [button8], [button9]]
     buttons[1].sort(key=lambda btn: btn.text)
 
     # Create the keyboard markup
@@ -300,7 +398,7 @@ def reporte_clientes(m):
     cid = m.chat.id
     """Handle the button click to generate and send the user report."""
     target_lang = get_language_by_telegram_id(cid)  # Get the user's language preference
-    bot.send_message(m.chat.id, translate("Generando reporte de clientes...", target_lang))
+    bot.send_message(cid, f"⏳ {translate('Generando reporte de clientes...', target_lang)}")
 
     file_path = generate_user_report()
     if file_path:
@@ -314,7 +412,8 @@ def reporte_coachs(m):
     #print(call)
     """Handle the button click to generate and send the user report."""
     target_lang = get_language_by_telegram_id(cid)  # Get the user's language preference
-    bot.send_message(m.chat.id, translate("Generando reporte de Coachs...", target_lang))
+    bot.send_message(cid, f"⏳ {translate('Generando reporte de Coachs...', target_lang)}")
+    
     file_path = generate_coaches_report()
     if file_path:
         with open(file_path, 'rb') as file:

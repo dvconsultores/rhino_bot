@@ -3,7 +3,7 @@ from flask import Blueprint, jsonify, request
 from flasgger import swag_from
 from models.payment import Payment
 from db import db
-from services.payment_service import get_all_payments, get_payment_by_id, create_payment, update_payment, delete_payment
+from services.payment_service import get_all_payments, get_payment_by_id, create_payment, update_payment, delete_payment, get_payments_by_year_and_month
 
 payment_bp = Blueprint('payment_bp', __name__)
 
@@ -39,6 +39,61 @@ def get_payments():
     payments = get_all_payments()
     return jsonify([payment.to_dict() for payment in payments])
 
+
+@payment_bp.route('/payments/<int:year>/<int:month>', methods=['GET'])
+@swag_from({
+    'tags': ['Payments'],
+    'summary': 'Get payments by year and month',
+    'description': 'Retrieve payments by year and month.',
+    'parameters': [
+        {
+            'name': 'year',
+            'in': 'path',
+            'type': 'integer',
+            'required': True,
+            'description': 'The year of the payments'
+        },
+        {
+            'name': 'month',
+            'in': 'path',
+            'type': 'integer',
+            'required': True,
+            'description': 'The month of the payments'
+        }
+    ],
+    'responses': {
+        200: {
+            'description': 'A list of payments',
+            'schema': {
+                'type': 'array',
+                'items': {
+                    'type': 'object',
+                    'properties': {
+                        'Usuario': {'type': 'string'},
+                        'FechaCreación': {'type': 'string', 'format': 'date-time'},
+                        'Fecha': {'type': 'string', 'format': 'date'},
+                        'MétodoPago': {'type': 'string'},
+                        'Referencia': {'type': 'string'},
+                        'Monto': {'type': 'number'},
+                        'Año': {'type': 'integer'},
+                        'Mes': {'type': 'integer'},
+                        
+                    }
+                }
+            }
+        },
+        404: {
+            'description': 'No payments found for the specified year and month'
+        }
+    }
+})
+def get_payments_by_year_and_month_controller(year, month):
+    payments = get_payments_by_year_and_month(year, month)
+    if payments:
+        return jsonify([payment.to_custom_dict() for payment in payments])
+    else:
+        return jsonify({'message': 'No payments found for the specified year and month'}), 404
+        
 @payment_bp.route('/payments/<int:payment_id>', methods=['GET'])
 @swag_from({
     'tags': ['Payments'],

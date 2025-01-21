@@ -5,6 +5,11 @@ from db import db  # Import db from db.py
 def get_all_payments():
     return Payment.query.all()
 
+def get_payments_by_year_and_month(year, month):
+    """Retrieve payments by year and month."""
+    payments = Payment.query.filter_by(year=year, month=month).all()
+    return payments        
+
 def get_payment_by_id(payment_id):
     return Payment.query.get(payment_id)
 

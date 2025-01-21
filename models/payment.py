@@ -3,6 +3,7 @@ from db import db  # Import db from db.py
 from models.users import User
 from models.payment_methods import PaymentMethods
 from datetime import datetime
+from collections import OrderedDict
 
 class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -31,6 +32,18 @@ class Payment(db.Model):
                 'month': self.month
             }
 
+    def to_custom_dict(self):
+        return OrderedDict([
+            ('Usuario', f"{self.user.name} {self.user.lastname}"),
+            ('FechaCreación', self.creation_date.isoformat()),
+            ('Fecha', self.date.isoformat()),
+            ('MétodoPago', self.payment_method.method),
+            ('Referencia', self.reference),
+            ('Monto', self.amount),
+            ('Año', self.year),
+            ('Mes', self.month),
+            ('ImageRef', f"{self.user.telegram_id}_{self.date.strftime('%Y%m%d')}")
+        ])     
 
     def __repr__(self):
         fields = ', '.join(f'{key}={value}' for key, value in self.__dict__.items() if not key.startswith('_'))
