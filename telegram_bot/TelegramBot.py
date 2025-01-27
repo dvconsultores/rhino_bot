@@ -274,7 +274,7 @@ def command_list(message):
             [InlineKeyboardButton(translate("📍 Ver Ubicaciones", target_lang), callback_data="list_locations_customer")],
             [InlineKeyboardButton(translate("📅 Ver Horarios", target_lang), callback_data="list_schedules_customer")],
             [InlineKeyboardButton(translate("💳 Reportar Pago", target_lang), callback_data="start_payment")],
-            [InlineKeyboardButton(translate("🏅 Coachs", target_lang), callback_data="add_attendance_handler")],
+            [InlineKeyboardButton(translate("🏅 Registro de Asistencia", target_lang), callback_data="add_attendance_handler")],
             # [InlineKeyboardButton(translate("🌐 Cambiar Idioma", target_lang), callback_data="edit_language")]
         ]
     elif user_type == UserType.administrativo:
@@ -303,7 +303,7 @@ def command_list(message):
             [InlineKeyboardButton(translate("📍 Ver Ubicaciones", target_lang), callback_data="list_locations_customer")],
             [InlineKeyboardButton(translate("📅 Ver Horarios", target_lang), callback_data="list_schedules_customer")],
             [InlineKeyboardButton(translate("💳 Reportar Pago", target_lang), callback_data="start_payment")],
-            [InlineKeyboardButton(translate("🏅 Coachs", target_lang), callback_data="add_attendance_handler")],
+            [InlineKeyboardButton(translate("🏅 Registro de Aistencia", target_lang), callback_data="add_attendance_handler")],
             [InlineKeyboardButton(translate("🛠️ Administrar", target_lang), callback_data="listAdmin")],
             # [InlineKeyboardButton(translate("🌐 Cambiar Idioma", target_lang), callback_data="edit_language")]
         ]
