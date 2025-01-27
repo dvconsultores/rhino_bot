@@ -47,7 +47,7 @@ def add_attendance_handler(bot, message):
 
 def list_coaches_for_attendance(bot, message):
     """List all available coaches for attendance."""
-    cid = message.chat.id
+    cid = message.chat.idh
     target_lang = get_language_by_telegram_id(cid)
     response = requests.get(f"{BASE_URL}/coaches")
 
@@ -121,18 +121,19 @@ def handle_user_selection(bot, message, users):
         return
 
     user_input = message.text.strip()
-    try:
-        input_cedula = user_input.split(":")[0].strip()
-    except IndexError:
-        bot.send_message(cid, translate("Entrada inválida. Por favor, seleccione un usuario válido con el formato proporcionado.", target_lang))
-        bot.register_next_step_handler(message, lambda msg: list_users_for_attendance(bot, msg))
-        return
 
-    selected_user = next((user for user in users if str(user['cedula']) == input_cedula and f"{user['cedula']}: {user['name']} {user['lastname']}" == user_input), None)
+    # Try to find the user based on input
+    selected_user = None
+    if ":" in user_input:  # Input matches button format "<cedula>: <name> <lastname>"
+        input_cedula = user_input.split(":")[0].strip()
+        selected_user = next((user for user in users if str(user['cedula']) == input_cedula and f"{user['cedula']}: {user['name']} {user['lastname']}" == user_input), None)
+    else:  # Input is just the cedula
+        input_cedula = user_input.strip()
+        selected_user = next((user for user in users if str(user['cedula']) == input_cedula), None)
 
     if not selected_user:
-        bot.send_message(cid, translate("Usuario inválido. Por favor, seleccione un usuario válido.", target_lang))
-        bot.register_next_step_handler(message, lambda msg: list_users_for_attendance(bot, msg))
+        bot.send_message(cid, translate("Usuario inválido. Por favor, seleccione un usuario válido o ingrese el número de cédula.", target_lang))
+        bot.register_next_step_handler(message, lambda msg: handle_user_selection(bot, msg, users))
         return
 
     # Store user in session data
@@ -148,6 +149,7 @@ def handle_user_selection(bot, message, users):
         # If location is not stored, proceed to location selection
         bot.send_message(cid, translate("Por favor, seleccione una ubicación:", target_lang))
         list_locations_for_attendance(bot, message)
+
 
 def list_locations_for_attendance(bot, message):
     """List all available locations for attendance."""
