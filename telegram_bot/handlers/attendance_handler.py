@@ -47,7 +47,7 @@ def add_attendance_handler(bot, message):
 
 def list_coaches_for_attendance(bot, message):
     """List all available coaches for attendance."""
-    cid = message.chat.idh
+    cid = message.chat.id
     target_lang = get_language_by_telegram_id(cid)
     response = requests.get(f"{BASE_URL}/coaches")
 
@@ -250,7 +250,7 @@ def process_add_or_finish(bot, message):
     target_lang = get_language_by_telegram_id(cid)
 
     user_input = message.text.strip().lower()
-    add_another_option = translate("Agregar Otro", target_lang).lower()
+    add_another_option = translate("Agregar Persona", target_lang).lower()
     finish_option = translate("Terminar", target_lang).lower()
 
     if user_input == add_another_option:
@@ -258,7 +258,7 @@ def process_add_or_finish(bot, message):
         list_users_for_attendance(bot, message)
     elif user_input == finish_option:
         user_session_data.pop(cid, None)  # Clear session data
-        bot.send_message(cid, translate("Proceso finalizado. Gracias.", target_lang))
+        bot.send_message(cid, translate("Proceso finalizado. Gracias.", target_lang), reply_markup=ReplyKeyboardRemove())
     else:
         bot.send_message(cid, translate("Opción inválida. Por favor, seleccione una opción válida.", target_lang))
         offer_add_or_finish(bot, message)
