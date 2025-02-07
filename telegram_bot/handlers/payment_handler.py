@@ -275,11 +275,12 @@ def submit_payment(cid):
     
     # Step 2: Prepare payment data with the retrieved user ID
     data = payment_data[cid]
+    reference = data['reference'] if data['reference'] else "000000"  # Set reference to "000000" if None or empty
     payment_payload = {
         'user_id': user_id,  # Use the fetched user_id here
         'date': datetime.now().strftime('%Y-%m-%d'),
         'amount': data['amount'],
-        'reference': data['reference'],
+        'reference': reference,
         'payment_method_id': data['payment_method_id'],
         'year': datetime.now().year,
         'month': datetime.now().month

@@ -10,7 +10,7 @@ class Payment(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     date = db.Column(db.Date, nullable=False)
     amount = db.Column(db.Float, nullable=False)
-    reference = db.Column(db.String(120), nullable=False)
+    reference = db.Column(db.String(120), nullable=True)
     payment_method_id = db.Column(db.Integer, db.ForeignKey('payment_methods.id'), nullable=False)
     creation_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     year = db.Column(db.Integer, nullable=False)
